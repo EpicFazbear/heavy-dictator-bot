@@ -8,6 +8,15 @@ return function(ENV)
 			if not reached then
 				local mined = math.random(1,3)
 				message:reply("Mined `"..mined.."` piece(s) of coal.")
+				local found2 = false
+				for _, worker in pairs(workers) do
+					if worker == message.member.id then
+						found2 = true
+					end
+				end
+				if not found2 then
+					table.insert(workers, message.member.id)
+				end
 	--[[
 				if mined == 1 then
 					message:addReaction("⛏")
@@ -45,13 +54,13 @@ return function(ENV)
 			if reached then
 				local found = false
 				for _, worker in pairs(paid) do
-					if worker == message.member.name then
+					if worker == message.member.id then
 						found = true
 					end
 				end
 				local found2 = false
 				for _, worker in pairs(workers) do
-					if worker == message.member.name then
+					if worker == message.member.id then
 						found2 = true
 					end
 				end
@@ -62,11 +71,11 @@ return function(ENV)
 					message:reply("You DID NOT CONTRIBUTE TO WORK!! NO PAY FOR YOU!!!!!!!!")
 					message:addReaction("❌")
 				else -- Found worker in contribution list, not in paid list
-					table.insert(paid, message.member.name)
+					table.insert(paid, message.member.id)
 					local owed = math.random(minPay, maxPay)
 					local foreign = math.floor((owed * cvRate) * 100) / 100
 					message:reply("Here is your paycheck of `".. owed .."` RUB. (about `$".. foreign .."` in CAPITALIST DOLLARS!!)")
-					message:addReaction("moneybag")
+					message:addReaction("💰")
 				end
 			else
 				message:reply("OUR GOAL OF `".. goal - coal .."` MORE PIECES OF COAL HASN'T BEEN REACHED YET. NOW BACK TO WORK!!")
@@ -82,9 +91,7 @@ return function(ENV)
 		`goal` - Shows the amount of pieces of coal the goal is set for this session.\
 		`total` - Shows total pieces of coal mined.\
 		`paycheck` - Gives you the government paycheck.")
-			message:reply("```This bot is in active development.\
-	Currently, up next in the list of things to be implemented will be command aliases, and error messages for debugging.\
-	If you have any suggestions, DM them to the owner of this bot. (Günsche シ#6704)```")
+			message:reply("```~~ This bot is in active development. ~~\nIf you have any suggestions, DM them to the owner of this bot. (Günsche シ#6704)```")
 			if IsAnAdmin then
 				message:reply("----------------------------------------------------------\
 	These are all of the admin-only commands.\
