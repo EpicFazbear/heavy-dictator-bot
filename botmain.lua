@@ -12,8 +12,8 @@ admins = json.decode(process.env.ADMINS)
 table.insert(admins, owner)
 
 mainchannel = process.env.MAIN_CHANNEL
-destchannel = ""
-coalmine = ""
+destchannel = nil
+coalmine = nil
 coal = 0
 reached = false
 paid = {}
@@ -23,8 +23,8 @@ minGoal = 100
 maxGoal = 300
 minPay = 750
 maxPay = 1000
+cvRate = 0.015472
 goal = math.random(minGoal, maxGoal)
-
 
 
 local functions = require("./functions.lua")(getfenv(1))
@@ -55,8 +55,13 @@ client:on("messageCreate", function(message)
 --			end
 --		end
 --		for _, cmdName in pairs(names) do
-			if string.find(string.lower(message.content), string.lower(prefix..cmdName)) then
-				cmd.Run(message)
+			if string.find(string.lower(message.content), string.lower(prefix .. cmdName)) then
+				local ran, error = pcall(function()
+					cmd.Run(cmd, message)
+				end)
+				if not ran then
+					message:reply("```~~ AN INTERNAL ERROR HAS OCCURRED ~~\n".. tostring(error) .."```")
+				end
 				return
 			end
 --		end
