@@ -8,7 +8,7 @@ local json = require("json")
 client = discordia.Client()
 prefix = process.env.PREFIX
 prefix = "" -- temporary
-adminsOnly = process.env.ADMINS_ONLY
+adminsOnly = process.env.ADMINS_ONLY == "true"
 ownerOverride = process.env.OWNER_OVERRIDE
 admins = json.decode(process.env.ADMINS)
 table.insert(admins, owner)
@@ -37,7 +37,7 @@ setfenv(1, previous) -- Loads our functions
 
 client:on("ready", function()
 	client:getChannel(mainchannel):send("***{!} Heavy dictator has been started. {!}***")
-	if process.env.INVISIBLE then
+	if process.env.INVISIBLE == "true" then
 		client:setStatus("invisible") -- Bravo Six, going dark.
 	end
 	owner = ownerOverride or client.owner.id
@@ -50,25 +50,15 @@ client:on("messageCreate", function(message)
 
 	for i=1, #commands do -- Runs through our list of commands and connects them to our messageCreate connection
 		local cmd = commands[i]
-		local names = {cmd.Name}
-			local cmdName = names[1]
-		-- Below is disabled for now since it can use up unnecessary processing power
---		if cmd.Aliases then
---			for _, name in pairs(cmd.Aliases) do
---				table.insert(names, name)
---			end
---		end
---		for _, cmdName in pairs(names) do
-			if string.find(string.lower(message.content), string.lower(prefix .. cmdName)) then
-				local ran, error = pcall(function()
-					cmd.Run(cmd, message)
-				end)
-				if not ran then
-					message:reply("```~~ AN INTERNAL ERROR HAS OCCURRED ~~\n".. tostring(error) .."```")
-				end
-				return
+		if string.find(string.lower(message.content), string.lower(prefix .. cmd.Name)) then
+			local ran, error = pcall(function()
+				cmd.Run(cmd, message)
+			end)
+			if not ran then
+				message:reply("```~~ AN INTERNAL ERROR HAS OCCURRED ~~\n".. tostring(error) .."```")
 			end
---		end
+			return
+		end
 	end
 
 	if string.sub(message.content,1,1) == "/" then -- (== prefix)
