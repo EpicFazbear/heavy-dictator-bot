@@ -91,7 +91,10 @@ return function(ENV)
 		`setmine <channel-id>` - Changes the coal mining channel.\
 		`reset` - Resets the mined coal quota.\
 		`deport <user-id>` - Sends a member of the *Soviet Australia* server to the Gulag.\
-		`release <user-id>` - Releases a member of the *Soviet Australia* server to the Gulag.")
+		`release <user-id>` - Releases a member of the *Soviet Australia* server to the Gulag.\
+		`setpay <min,max>` - Sets the minimum and maximum amount of pay.\
+		`setgoal <min,max>` - Sets the minimum and maximum goal.\
+		`setrate <conversion-rate>` - Sets the conversion rate between USD and RUB.")
 			end
 			if message.author.id == owner then
 				message:reply("----------------------------------------------------------\
@@ -103,8 +106,10 @@ return function(ENV)
 
 		{Name="/setmine", Run=function(self, message)
 			if not isAdmin(message.author.id) then return end
-			if not allowed then return end
-			coalmine = string.sub(message.content, string.len(prefix) + 7 + 3) -- 2
+			coalmine = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
+			if coalmine == nil or coalmine == "" then
+				coalmine = message.channel.id
+			end
 			message:reply("`Successfully changed the 'coalmine' channel!` - <#".. coalmine ..">")
 		end};
 
@@ -120,7 +125,7 @@ return function(ENV)
 
 		{Name="/deport", Run=function(self, message)
 			if not isAdmin(message.author.id) then return end
-			local userid = string.sub(message.content, string.len(prefix) + 6 + 3) -- 2
+			local userid = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			local user = client:getGuild("662529921460994078"):getMember(userid)
 			if user then
 				user:removeRole("662532187978989579")
@@ -133,7 +138,7 @@ return function(ENV)
 
 		{Name="/release", Run=function(self, message)
 			if not isAdmin(message.author.id) then return end
-			local userid = string.sub(message.content, string.len(prefix) + 6 + 3) -- 2
+			local userid = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			local user = client:getGuild("662529921460994078"):getMember(userid)
 			if user then
 				user:removeRole("680958267186479151")
@@ -147,14 +152,14 @@ return function(ENV)
 		{Name="/setmain", Run=function(self, message)
 			if not isAdmin(message.author.id) then return end
 			--if message.author.id == owner then
-				mainchannel = string.sub(message.content, string.len(prefix) + 7 + 3) -- 2
+				mainchannel = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 				message:reply("`Successfully changed the 'broadcast' channel!` - <#".. mainchannel ..">")
 			--end
 		end};
 
 		{Name="/setdest", Aliases={"/setchan"}, Run=function(self, message)
 			--if message.author.id == owner then
-				destchannel = string.sub(message.content, string.len(prefix) + 7 + 3) -- 2
+				destchannel = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 				message:reply("`Successfully changed the 'destination' channel!` - <#".. destchannel ..">")
 			--end
 		end};

@@ -1,4 +1,6 @@
 -- https://discordapp.com/oauth2/authorize?client_id=472921438769381397&permissions=68671553&scope=bot
+-- TODO: port over the env.INVISIBLE && the error handler over to the remote-comms-bot
+-- also make a STATUS .env variable
 
 local discordia = require("discordia")
 local json = require("json")
@@ -35,7 +37,9 @@ setfenv(1, previous) -- Loads our functions
 
 client:on("ready", function()
 	client:getChannel(mainchannel):send("***{!} Heavy dictator has been started. {!}***")
---	client:setStatus("invisible") -- Bravo Six, going dark.
+	if process.env.INVISIBLE then
+		client:setStatus("invisible") -- Bravo Six, going dark.
+	end
 	owner = ownerOverride or client.owner.id
 	print("\nHeavy dictator now activating.. Gulag Mode enabled.")
 end)
