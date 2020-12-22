@@ -193,10 +193,10 @@ return function(ENV)
 			if not isAdmin(message.author.id) then return end
 			local args = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if args == nil or args == "" then return end
-			--if tonumber(args) then
+			if tonumber(args) then
 				cvRate = tonumber(args)
 				message:reply("`Successfully made the following changes:`\n```Conversion rate: 1 USD == ".. 1 / cvRate .." RUB```")
-			--end
+			end
 		end};
 	};
 end;

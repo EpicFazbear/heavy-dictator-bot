@@ -35,7 +35,7 @@ setfenv(1, previous) -- Loads our functions
 
 client:on("ready", function()
 	client:getChannel(mainchannel):send("***{!} Heavy dictator has been started. {!}***")
-	client:setStatus("invisible") -- Bravo Six, going dark.
+--	client:setStatus("invisible") -- Bravo Six, going dark.
 	owner = ownerOverride or client.owner.id
 	print("\nHeavy dictator now activating.. Gulag Mode enabled.")
 end)
