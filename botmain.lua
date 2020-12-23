@@ -1,19 +1,20 @@
 -- https://discordapp.com/oauth2/authorize?client_id=472921438769381397&permissions=68671553&scope=bot
--- TODO: port over the env.INVISIBLE && the error handler over to the remote-comms-bot
--- also make a STATUS .env variable
 
 local discordia = require("discordia")
 local json = require("json")
+local ENV = process.env
 
 client = discordia.Client()
-prefix = process.env.PREFIX
+prefix = ENV.PREFIX
 prefix = "" -- temporary
-adminsOnly = process.env.ADMINS_ONLY == "true"
-ownerOverride = process.env.OWNER_OVERRIDE
-admins = json.decode(process.env.ADMINS)
+adminsOnly = ENV.ADMINS_ONLY == "true"
+ownerOverride = ENV.OWNER_OVERRIDE
+if ownerOverride == "" then ownerOverride = nil end
+admins = json.decode(ENV.ADMINS)
 table.insert(admins, owner)
 
-mainchannel = process.env.MAIN_CHANNEL
+
+mainchannel = ENV.MAIN_CHANNEL
 destchannel = nil
 coalmine = nil
 coal = 0
@@ -36,11 +37,14 @@ setfenv(1, previous) -- Loads our functions
 
 
 client:on("ready", function()
-	client:getChannel(mainchannel):send("***{!} Heavy dictator has been started. {!}***")
-	if process.env.INVISIBLE == "true" then
+	if ENV.INVISIBLE == "true" then
 		client:setStatus("invisible") -- Bravo Six, going dark.
 	end
+	if string.lower(ENV.STATUS) ~= "none" then
+		client:setGame(ENV.STATUS) -- "Sending and receiving messages from within ROBLOX!"
+	end
 	owner = ownerOverride or client.owner.id
+	client:getChannel(mainchannel):send("***{!} Heavy dictator has been started. {!}***")
 	print("\nHeavy dictator now activating.. Gulag Mode enabled.")
 end)
 
@@ -85,4 +89,4 @@ client:on("messageCreate", function(message)
 end)
 
 
-client:run("Bot ".. process.env.BOT_TOKEN) -- Client: Heavy Dictator
+client:run("Bot ".. ENV.BOT_TOKEN) -- Client: Heavy Dictator
