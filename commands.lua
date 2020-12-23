@@ -74,7 +74,7 @@ return function(ENV)
 					table.insert(paid, message.member.id)
 					local owed = math.random(minPay, maxPay)
 					local foreign = math.floor((owed * cvRate) * 100) / 100
-					message:reply("Here is your paycheck of `".. owed .."` RUB. (about `$".. foreign .."` in CAPITALIST DOLLARS!!)")
+					message:reply("Here is your paycheck of `".. owed .."` RUB. (About `$".. foreign .."` in CAPITALIST DOLLARS!!)")
 					message:addReaction("💰")
 				end
 			else
@@ -160,6 +160,9 @@ return function(ENV)
 			if not isAdmin(message.author.id) then return end
 			--if message.author.id == owner then
 				mainchannel = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
+				if mainchannel == nil or mainchannel == "" then
+					mainchannel = message.channel.id
+				end
 				message:reply("`Successfully changed the 'broadcast' channel!` - <#".. mainchannel ..">")
 			--end
 		end};
@@ -167,6 +170,9 @@ return function(ENV)
 		{Name="/setdest", Aliases={"/setchan"}, Run=function(self, message)
 			--if message.author.id == owner then
 				destchannel = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
+				if destchannel == nil or destchannel == "" then
+					destchannel = message.channel.id
+				end
 				message:reply("`Successfully changed the 'destination' channel!` - <#".. destchannel ..">")
 			--end
 		end};
