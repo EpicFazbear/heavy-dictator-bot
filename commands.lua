@@ -159,21 +159,21 @@ return function(ENV)
 		{Name="/setmain", Run=function(self, message)
 			if not isAdmin(message.author.id) then return end
 			--if message.author.id == owner then
-				mainchannel = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
-				if mainchannel == nil or mainchannel == "" then
-					mainchannel = message.channel.id
+				mainChannel = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
+				if mainChannel == nil or mainChannel == "" then
+					mainChannel = message.channel.id
 				end
-				message:reply("`Successfully changed the 'broadcast' channel!` - <#".. mainchannel ..">")
+				message:reply("`Successfully changed the 'broadcast' channel!` - <#".. mainChannel ..">")
 			--end
 		end};
 
 		{Name="/setdest", Aliases={"/setchan"}, Run=function(self, message)
 			--if message.author.id == owner then
-				destchannel = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
-				if destchannel == nil or destchannel == "" then
-					destchannel = message.channel.id
+				destChannel = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
+				if destChannel == nil or destChannel == "" then
+					destChannel = message.channel.id
 				end
-				message:reply("`Successfully changed the 'destination' channel!` - <#".. destchannel ..">")
+				message:reply("`Successfully changed the 'destination' channel!` - <#".. destChannel ..">")
 			--end
 		end};
 
