@@ -14,8 +14,8 @@ admins = json.decode(ENV.ADMINS)
 table.insert(admins, owner)
 
 
-mainchannel = ENV.MAIN_CHANNEL
-destchannel = nil
+mainChannel = ENV.MAIN_CHANNEL
+destChannel = nil
 coalmine = nil
 coal = 0
 reached = false
@@ -44,7 +44,7 @@ client:on("ready", function()
 		client:setGame(ENV.STATUS) -- "Sending and receiving messages from within ROBLOX!"
 	end
 	owner = ownerOverride or client.owner.id
-	client:getChannel(mainchannel):send("***{!} Heavy dictator has been started. {!}***")
+	client:getChannel(mainChannel):send("***{!} Heavy dictator has been started. {!}***")
 	print("\nHeavy dictator now activating.. Gulag Mode enabled.")
 end)
 
@@ -78,8 +78,8 @@ client:on("messageCreate", function(message)
 	if message.author.id == owner then
 		allowed = true
 	end
-	if message.channel.id == mainchannel and destchannel and allowed then
-		local channel = client:getChannel(destchannel)
+	if message.channel.id == mainChannel and destChannel and allowed then
+		local channel = client:getChannel(destChannel)
 		if message.attachment ~= nil and channel then
 			channel:send{content = message.content, embed = {image = {url = message.attachment.url}}}
 		else
