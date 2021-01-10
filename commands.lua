@@ -83,6 +83,25 @@ return function(ENV)
 			end
 		end};
 
+		{Name="/setmine", Run=function(self, message)
+			if not isAdmin(message.author.id) then return end
+			coalmine = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
+			if coalmine == nil or coalmine == "" then
+				coalmine = message.channel.id
+			end
+			message:reply("`Successfully changed the 'coalmine' channel!` - <#".. coalmine ..">")
+		end};
+
+		{Name="/reset", Run=function(self, message)
+			if not isAdmin(message.author.id) then return end
+			reached = false
+			paid = {}
+			workers = {}
+			coal = 0
+			goal = math.random(minGoal, maxGoal)
+			message:reply("`Successfully restarted the coal mine operation! We are now aiming for '".. goal .."' pieces of coal.`")
+		end};
+
 		{Name="/help", Run=function(self, message)
 			local IsAnAdmin = isAdmin(message.author.id)
 			message:reply("`Prefix = \"/\"`\
@@ -109,25 +128,6 @@ return function(ENV)
 		`setmain <channel-id>` - Changes the main broadcast channel.\
 		`setdest <channel-id>` - Changes the main destiantion channel.")
 			end
-		end};
-
-		{Name="/setmine", Run=function(self, message)
-			if not isAdmin(message.author.id) then return end
-			coalmine = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
-			if coalmine == nil or coalmine == "" then
-				coalmine = message.channel.id
-			end
-			message:reply("`Successfully changed the 'coalmine' channel!` - <#".. coalmine ..">")
-		end};
-
-		{Name="/reset", Run=function(self, message)
-			if not isAdmin(message.author.id) then return end
-			reached = false
-			paid = {}
-			workers = {}
-			coal = 0
-			goal = math.random(minGoal, maxGoal)
-			message:reply("`Successfully reset the coal mine operation! We are now aiming for '".. goal .."' pieces of coal.`")
 		end};
 
 		{Name="/deport", Run=function(self, message)
