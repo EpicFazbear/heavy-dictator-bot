@@ -4,7 +4,6 @@ local ENV = process.env
 
 client = discordia.Client()
 prefix = ENV.PREFIX
-prefix = "" -- temporary
 adminsOnly = ENV.ADMINS_ONLY == "true"
 ownerOverride = ENV.OWNER_OVERRIDE
 if ownerOverride == "" then ownerOverride = nil end
@@ -39,7 +38,7 @@ client:on("ready", function()
 		client:setStatus("invisible") -- Bravo Six, going dark.
 	end
 	if string.lower(ENV.STATUS) ~= "none" then
-		client:setGame(ENV.STATUS) -- "Sending and receiving messages from within ROBLOX!"
+		client:setGame(ENV.STATUS)
 	end
 	owner = ownerOverride or client.owner.id
 	client:getChannel(mainChannel):send("***{!} Heavy dictator has been started. {!}***")
@@ -50,22 +49,19 @@ end)
 client:on("messageCreate", function(message)
 	if message.author == client.user or message.author.bot == true or message.author.discriminator == 0000 then return end
 
-	for i=1, #commands do -- Runs through our list of commands and connects them to our messageCreate connection
-		local cmd = commands[i]
-		if string.find(string.lower(message.content), string.lower(prefix .. cmd.Name)) then
-			local ran, error = pcall(function()
-				cmd.Run(cmd, message)
-			end)
-			if not ran then
-				message:reply("```~~ AN INTERNAL ERROR HAS OCCURRED ~~\n".. tostring(error) .."```")
-			end
-			return
+	if string.sub(string.lower(message.content), 1, 1) == prefix then
+		for i=1, #commands do -- Runs through our list of commands and connects them to our messageCreate connection
+			local cmd = commands[i]
+			if string.sub(string.lower(message.content), 1, string.len(prefix) + string.len(cmd.Name)) == string.lower(prefix .. cmd.Name) then
+				local ran, error = pcall(function()
+					cmd.Run(cmd, message)
+				end)
+				if not ran then
+					message:reply("```~~ AN INTERNAL ERROR HAS OCCURRED ~~\n".. tostring(error) .."```")
+				end
+			return end
 		end
-	end
-
-	if string.sub(message.content,1,1) == "/" then -- (== prefix)
-		return
-	end
+	return end
 
 	local allowed = not adminsOnly
 	for _, id in pairs(admins) do
@@ -87,4 +83,4 @@ client:on("messageCreate", function(message)
 end)
 
 
-client:run("Bot ".. ENV.BOT_TOKEN) -- Client: Heavy Dictator
+client:run("Bot ".. ENV.BOT_TOKEN);
