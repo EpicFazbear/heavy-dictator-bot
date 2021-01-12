@@ -3,7 +3,7 @@ return function(ENV)
 	setfenv(1, ENV)
 
 	return { -- TODO: overhaul formatting to ["NAME"] = function()
-		{Name="/minecoal", Run=function(self, message)
+		{Name="minecoal", Run=function(self, message)
 			if message.channel.id ~= coalmine then return end
 			if not reached then
 				local mined = math.random(1,3)
@@ -39,17 +39,17 @@ return function(ENV)
 			end
 		end};
 
-		{Name="/total", Run=function(self, message)
+		{Name="total", Run=function(self, message)
 			if message.channel.id ~= coalmine then return end
 			message:reply("A total of `"..coal.."` pieces coal has been mined. NOW BACK TO WORK!!")
 		end};
 
-		{Name="/goal", Run=function(self, message)
+		{Name="goal", Run=function(self, message)
 			if message.channel.id ~= coalmine then return end
 			message:reply("About `".. goal - coal .."` more pieces of coal need to be mined. NOW BACK TO WORK!!")
 		end};
 
-		{Name="/paycheck", Run=function(self, message) -- Todo: Fix /Paycheck
+		{Name="paycheck", Run=function(self, message) -- Todo: Fix /Paycheck
 			if message.channel.id ~= coalmine then return end
 			if reached then
 				local found = false
@@ -83,7 +83,7 @@ return function(ENV)
 			end
 		end};
 
-		{Name="/setmine", Run=function(self, message)
+		{Name="setmine", Run=function(self, message)
 			if not isAdmin(message.author.id) then return end
 			coalmine = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if coalmine == nil or coalmine == "" then
@@ -92,7 +92,7 @@ return function(ENV)
 			message:reply("`Successfully changed the 'coalmine' channel!` - <#".. coalmine ..">")
 		end};
 
-		{Name="/reset", Run=function(self, message)
+		{Name="reset", Run=function(self, message)
 			if not isAdmin(message.author.id) then return end
 			reached = false
 			paid = {}
@@ -102,7 +102,7 @@ return function(ENV)
 			message:reply("`Successfully restarted the coal mine operation! We are now aiming for '".. goal .."' pieces of coal.`")
 		end};
 
-		{Name="/help", Run=function(self, message)
+		{Name="help", Run=function(self, message)
 			local IsAnAdmin = isAdmin(message.author.id)
 			message:reply("`Prefix = \"/\"`\
 	These are all of the public commands.\
@@ -130,7 +130,7 @@ return function(ENV)
 			end
 		end};
 
-		{Name="/deport", Run=function(self, message)
+		{Name="deport", Run=function(self, message)
 			if not isAdmin(message.author.id) then return end
 			local userid = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			local user = client:getGuild("662529921460994078"):getMember(userid)
@@ -143,7 +143,7 @@ return function(ENV)
 			end
 		end};
 
-		{Name="/release", Run=function(self, message)
+		{Name="release", Run=function(self, message)
 			if not isAdmin(message.author.id) then return end
 			local userid = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			local user = client:getGuild("662529921460994078"):getMember(userid)
@@ -156,7 +156,7 @@ return function(ENV)
 			end
 		end};
 
-		{Name="/setmain", Run=function(self, message)
+		{Name="setmain", Run=function(self, message)
 			if not isAdmin(message.author.id) then return end
 			--if message.author.id == owner then
 				mainChannel = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
@@ -167,7 +167,7 @@ return function(ENV)
 			--end
 		end};
 
-		{Name="/setdest", Aliases={"/setchan"}, Run=function(self, message)
+		{Name="setdest", Aliases={"/setchan"}, Run=function(self, message)
 			--if message.author.id == owner then
 				destChannel = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 				if destChannel == nil or destChannel == "" then
@@ -177,7 +177,7 @@ return function(ENV)
 			--end
 		end};
 
-		{Name="/setpay", Run=function(self, message)
+		{Name="setpay", Run=function(self, message)
 			if not isAdmin(message.author.id) then return end
 			local args = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if args == nil or args == "" then return end
@@ -192,7 +192,7 @@ return function(ENV)
 			end
 		end};
 
-		{Name="/setgoal", Run=function(self, message)
+		{Name="setgoal", Run=function(self, message)
 			if not isAdmin(message.author.id) then return end
 			local args = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if args == nil or args == "" then return end
@@ -207,7 +207,7 @@ return function(ENV)
 			end
 		end};
 
-		{Name="/setrate", Run=function(self, message)
+		{Name="setrate", Run=function(self, message)
 			if not isAdmin(message.author.id) then return end
 			local args = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if args == nil or args == "" then return end
