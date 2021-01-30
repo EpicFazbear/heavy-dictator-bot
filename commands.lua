@@ -168,6 +168,7 @@ return function(ENV)
 		end};
 
 		{Name="setdest", Aliases={"/setchan"}, Run=function(self, message)
+			if not isAdmin(message.author.id) then return end
 			--if message.author.id == owner then
 				destChannel = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 				if destChannel == nil or destChannel == "" then
