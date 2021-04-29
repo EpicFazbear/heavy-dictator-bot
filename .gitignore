@@ -1,6 +1,6 @@
-deps
+.env
+deps/
 discordia.log
 gateway.json
-.env
 opus.dll
 sodium.dll
