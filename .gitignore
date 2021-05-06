@@ -1,6 +1,11 @@
+# Regular things that should be excluded
 .env
 deps/
-discordia.log
-gateway.json
-opus.dll
-sodium.dll
+
+# Ignore logs created by Discordia
+*.log
+*.json
+# Ignore optional libraries (Notably opus.dll and sodium.dll for voice)
+*.dll
+# Ignore optional executables (Notably ffmpeg.exe for voice)
+*.exe
