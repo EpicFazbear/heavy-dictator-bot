@@ -1,0 +1,3 @@
+[submodule "deps/protgres"]
+	path = deps/protgres
+	url = https://github.com/JustMaximumPower/luvit-postgres
