@@ -234,5 +234,22 @@ return function(ENV)
 				message:reply("`Successfully made the following changes:`\n```Conversion rate: 1 USD == ".. 1 / cvRate .." RUB```")
 			end
 		end;
+
+		["balance"] = function(self, message)		--this is just a temporary quick fix. DB will be implemented later on -vella
+			if message.channel.id ~= coalmine then return end
+				if checkbalance(message.author.id) ~= nil then
+					if type(checkbalance(message.author.id) == "number" then
+						message:reply("You have worked for ``"..checkbalance(message.author.id).."`` RUB")
+					else
+						message:reply("Balance internal error")
+					end
+				else
+					message:reply("You have worked for ``0`` RUB. GET BACK TO WORK!")
+					message:addReaction("❌")
+
+			
+				end;
+
+
 	};
 end;
