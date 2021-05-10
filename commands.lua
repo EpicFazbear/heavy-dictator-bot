@@ -2,8 +2,8 @@
 return function(ENV)
 	setfenv(1, ENV)
 
-	return {
-		["minecoal"] = function(self, message)
+	return { -- TODO: overhaul formatting to ["NAME"] = function()
+		{Name="minecoal", Run=function(self, message)
 			if message.channel.id ~= coalmine then return end
 			if not reached then
 				local mined = math.random(1,3)
@@ -37,19 +37,19 @@ return function(ENV)
 			else
 				message:addReaction("❌")
 			end
-		end;
+		end};
 
-		["total"] = function(self, message)
+		{Name="total", Run=function(self, message)
 			if message.channel.id ~= coalmine then return end
 			message:reply("A total of `"..coal.."` pieces coal has been mined. NOW BACK TO WORK!!")
-		end;
+		end};
 
-		["goal"] = function(self, message)
+		{Name="goal", Run=function(self, message)
 			if message.channel.id ~= coalmine then return end
 			message:reply("About `".. goal - coal .."` more pieces of coal need to be mined. NOW BACK TO WORK!!")
-		end;
+		end};
 
-		["paycheck"] = function(self, message) -- Todo: Fix /Paycheck
+		{Name="paycheck", Run=function(self, message) -- Todo: Fix /Paycheck
 			if message.channel.id ~= coalmine then return end
 			if reached then
 				local found = false
@@ -81,33 +81,28 @@ return function(ENV)
 				message:reply("OUR GOAL OF `".. goal - coal .."` MORE PIECES OF COAL HASN'T BEEN REACHED YET. NOW BACK TO WORK!!")
 				message:addReaction("❌")
 			end
-		end;
+		end};
 
-		["setmine"] = function(self, message)
+		{Name="setmine", Run=function(self, message)
 			if not isAdmin(message.author.id) then return end
 			coalmine = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if coalmine == nil or coalmine == "" then
-				if client:getChannel(coalmine) ~= nil then
-					coalmine = message.channel.id
-					message:reply("`Successfully changed the 'coalmine' channel!` - <#".. coalmine ..">")
-				else
-					message:reply("`Could not find the channel of the provided ID!`")
-				end
+				coalmine = message.channel.id
 			end
-		end;
+			message:reply("`Successfully changed the 'coalmine' channel!` - <#".. coalmine ..">")
+		end};
 
-		["reset"] = function(self, message)
+		{Name="reset", Run=function(self, message)
 			if not isAdmin(message.author.id) then return end
 			reached = false
 			paid = {}
 			workers = {}
 			coal = 0
 			goal = math.random(minGoal, maxGoal)
-			message:reply("`Successfully restarted the coal mine operation!`")
-			client:getChannel(coalmine):send("`We are now aiming for '".. goal .."' pieces of coal.`")
-		end;
+			message:reply("`Successfully restarted the coal mine operation! We are now aiming for '".. goal .."' pieces of coal.`")
+		end};
 
-		["help"] = function(self, message)
+		{Name="help", Run=function(self, message)
 			local IsAnAdmin = isAdmin(message.author.id)
 			message:reply("`Prefix = \"/\"`\
 	These are all of the public commands.\
@@ -133,9 +128,9 @@ return function(ENV)
 		`setmain <channel-id>` - Changes the main broadcast channel.\
 		`setdest <channel-id>` - Changes the main destiantion channel.")
 			end
-		end;
+		end};
 
-		["deport"] = function(self, message)
+		{Name="deport", Run=function(self, message)
 			if not isAdmin(message.author.id) then return end
 			local userid = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			local user = client:getGuild("662529921460994078"):getMember(userid)
@@ -146,9 +141,9 @@ return function(ENV)
 			else
 				message:reply("`User does not exist.`")
 			end
-		end;
+		end};
 
-		["release"] = function(self, message)
+		{Name="release", Run=function(self, message)
 			if not isAdmin(message.author.id) then return end
 			local userid = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			local user = client:getGuild("662529921460994078"):getMember(userid)
@@ -159,43 +154,31 @@ return function(ENV)
 			else
 				message:reply("`User does not exist.`")
 			end
-		end;
+		end};
 
-		["setmain"] = function(self, message)
+		{Name="setmain", Run=function(self, message)
 			if not isAdmin(message.author.id) then return end
 			--if message.author.id == owner then
 				mainChannel = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 				if mainChannel == nil or mainChannel == "" then
-					if client:getChannel(mainChannel) ~= nil then
-						mainChannel = message.channel.id
-						message:reply("`Successfully changed the 'broadcast' channel!` - <#".. mainChannel ..">")
-					else
-						message:reply("`Could not find the channel of the provided ID!`")
-					end
+					mainChannel = message.channel.id
 				end
+				message:reply("`Successfully changed the 'broadcast' channel!` - <#".. mainChannel ..">")
 			--end
-		end;
+		end};
 
-		["setdest"] = function(self, message)
+		{Name="setdest", Aliases={"/setchan"}, Run=function(self, message)
 			if not isAdmin(message.author.id) then return end
 			--if message.author.id == owner then
 				destChannel = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 				if destChannel == nil or destChannel == "" then
-					if client:getChannel(destChannel) ~= nil then
-						destChannel = message.channel.id
-						message:reply("`Successfully changed the 'destination' channel!` - <#".. destChannel ..">")
-					else
-						message:reply("`Could not find the channel of the provided ID!`")
-					end
+					destChannel = message.channel.id
 				end
+				message:reply("`Successfully changed the 'destination' channel!` - <#".. destChannel ..">")
 			--end
-		end;
+		end};
 
-		["setchan"] = function(self, message)
-			return self["setdest"](message) -- Alias command
-		end;
-
-		["setpay"] = function(self, message)
+		{Name="setpay", Run=function(self, message)
 			if not isAdmin(message.author.id) then return end
 			local args = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if args == nil or args == "" then return end
@@ -208,9 +191,9 @@ return function(ENV)
 				maxPay = num2
 				message:reply("`Successfully made the following changes:`\n```Minimum pay (in RUB): ".. minPay .."\nMaximum pay (in RUB): ".. maxPay .."```")
 			end
-		end;
+		end};
 
-		["setgoal"] = function(self, message)
+		{Name="setgoal", Run=function(self, message)
 			if not isAdmin(message.author.id) then return end
 			local args = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if args == nil or args == "" then return end
@@ -223,9 +206,9 @@ return function(ENV)
 				maxGoal = num2
 				message:reply("`Successfully made the following changes:`\n```Minimum goal: ".. minGoal .."\nMaximum goal: ".. maxGoal .."```")
 			end
-		end;
+		end};
 
-		["setrate"] = function(self, message)
+		{Name="setrate", Run=function(self, message)
 			if not isAdmin(message.author.id) then return end
 			local args = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if args == nil or args == "" then return end
@@ -233,6 +216,7 @@ return function(ENV)
 				cvRate = tonumber(args)
 				message:reply("`Successfully made the following changes:`\n```Conversion rate: 1 USD == ".. 1 / cvRate .." RUB```")
 			end
+<<<<<<< HEAD
 		end;
 
 		["balance"] = function(self, message)		--this is just a temporary quick fix. DB will be implemented later on -vella
@@ -251,5 +235,8 @@ return function(ENV)
 				end;
 
 
+=======
+		end};
+>>>>>>> parent of 24946ae (Overhaul Work - Part 1)
 	};
 end;
