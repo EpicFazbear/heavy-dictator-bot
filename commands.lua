@@ -223,16 +223,5 @@ return function(ENV)
 			if message.channel.id ~= coalmine then return end
 			message:reply("You have earned ``"..getBalance(message.author.id).."`` RUB. NOW GET BACK TO WORK!!");
 		end};
-
-
-
-
-
-
-
-
-
-
-
 	};
 end;
