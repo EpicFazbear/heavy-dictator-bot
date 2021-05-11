@@ -75,7 +75,7 @@ return function(ENV)
 					local owed = math.random(minPay, maxPay)
 					addBalance(message.author.id, owed)
 					local foreign = math.floor((owed * cvRate) * 100) / 100
-					message:reply("Here is your paycheck of `".. owed .."` RUB. (About `$".. foreign .."` in CAPITALIST DOLLARS!!)")
+					message:reply("Here is your paycheck of `".. owed .." RUB`. (About `$".. foreign .."` in CAPITALIST DOLLARS!!)")
 					message:addReaction("💰")
 				end
 			else
@@ -221,7 +221,16 @@ return function(ENV)
 
 		{Name="balance", Run=function(self, message)
 			if message.channel.id ~= coalmine then return end
-			message:reply("You have earned ``"..getBalance(message.author.id).."`` RUB. NOW GET BACK TO WORK!!");
+			local balance = getBalance(message.author.id)
+			if balance > 0 then
+				message:reply("You have a total balance of `".. tostring(balance) .." RUB` in your account. NOW GET BACK TO WORK!!")
+			elseif balance == 0 then
+				message:reply("You have NO total balance in your account. GET WORKING IF YOU WANT TO GET A PAYCHECK!!")
+				message:addReaction("❌")
+			else -- balance < 0
+				message:reply("You are IN DEBT BY `".. tostring(math.abs(balance)) .." RUB`. GET BACK TO WORK AND PAY IT OFF!!")
+				message:addReaction("❌")
+			end
 		end};
 	};
 end;
