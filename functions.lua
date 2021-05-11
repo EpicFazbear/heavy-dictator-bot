@@ -17,6 +17,36 @@ return function(ENV)
 			end
 			return false
 		end;
+
+		balances = {}	--will be replaced with database once available // RUB only
+
+		getBalance = function(userid) 
+			if balances[userid] ~= nil then
+				if type(balances[userid]) == "number" then
+					return balances[userid]
+				else
+					balances[userid] = 0;
+					return balances[userid]
+				end
+			else
+				balances[userid] = 0;
+				return balances[userid]
+			end
+		end;
+
+		addBalance = function(userid, rubAmount)
+			if balances[userid] ~= nil then
+				if type(balances[userid]) == "number" then
+					balances[userid] += rubAmount 
+				else
+					balances[userid] = 0;
+		
+				end	
+			else
+				balances[userid] = 0;
+			end
+		end;
+
 	};
 end;
 

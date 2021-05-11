@@ -73,6 +73,7 @@ return function(ENV)
 				else -- Found worker in contribution list, not in paid list
 					table.insert(paid, message.member.id)
 					local owed = math.random(minPay, maxPay)
+					addBalance(message.author.id, owed)
 					local foreign = math.floor((owed * cvRate) * 100) / 100
 					message:reply("Here is your paycheck of `".. owed .."` RUB. (About `$".. foreign .."` in CAPITALIST DOLLARS!!)")
 					message:addReaction("💰")
@@ -217,5 +218,21 @@ return function(ENV)
 				message:reply("`Successfully made the following changes:`\n```Conversion rate: 1 USD == ".. 1 / cvRate .." RUB```")
 			end
 		end};
+
+		{Name="balance", Run=function(self, message)
+			if message.channel.id ~= coalmine then return end
+			message:reply("You have earned ``"..getBalance(message.author.id).."`` RUB. NOW GET BACK TO WORK!!");
+		end};
+
+
+
+
+
+
+
+
+
+
+
 	};
 end;
