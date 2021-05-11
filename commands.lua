@@ -3,7 +3,7 @@ return function(ENV)
 	setfenv(1, ENV)
 
 	return {
-		["minecoal"] = function(self, message)
+		minecoal = function(self, message)
 			if message.channel.id ~= coalmine then return end
 			if not reached then
 				local mined = math.random(1,3)
@@ -39,17 +39,17 @@ return function(ENV)
 			end
 		end;
 
-		["total"] = function(self, message)
+		total = function(self, message)
 			if message.channel.id ~= coalmine then return end
 			message:reply("A total of `"..coal.."` pieces coal has been mined. NOW BACK TO WORK!!")
 		end;
 
-		["goal"] = function(self, message)
+		goal = function(self, message)
 			if message.channel.id ~= coalmine then return end
 			message:reply("About `".. goal - coal .."` more pieces of coal need to be mined. NOW BACK TO WORK!!")
 		end;
 
-		["paycheck"] = function(self, message) -- Todo: Fix /Paycheck
+		paycheck = function(self, message) -- Todo: Fix /Paycheck
 			if message.channel.id ~= coalmine then return end
 			if reached then
 				local found = false
@@ -83,7 +83,7 @@ return function(ENV)
 			end
 		end;
 
-		["setmine"] = function(self, message)
+		setmine = function(self, message)
 			if not isAdmin(message.author.id) then return end
 			coalmine = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if coalmine == nil or coalmine == "" then
@@ -96,7 +96,7 @@ return function(ENV)
 			end
 		end;
 
-		["reset"] = function(self, message)
+		reset = function(self, message)
 			if not isAdmin(message.author.id) then return end
 			reached = false
 			paid = {}
@@ -107,7 +107,7 @@ return function(ENV)
 			client:getChannel(coalmine):send("`We are now aiming for '".. goal .."' pieces of coal.`")
 		end;
 
-		["help"] = function(self, message)
+		help = function(self, message)
 			local IsAnAdmin = isAdmin(message.author.id)
 			message:reply("`Prefix = \"/\"`\
 	These are all of the public commands.\
@@ -135,7 +135,7 @@ return function(ENV)
 			end
 		end;
 
-		["deport"] = function(self, message)
+		deport = function(self, message)
 			if not isAdmin(message.author.id) then return end
 			local userid = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			local user = client:getGuild("662529921460994078"):getMember(userid)
@@ -148,7 +148,7 @@ return function(ENV)
 			end
 		end;
 
-		["release"] = function(self, message)
+		release = function(self, message)
 			if not isAdmin(message.author.id) then return end
 			local userid = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			local user = client:getGuild("662529921460994078"):getMember(userid)
@@ -161,7 +161,7 @@ return function(ENV)
 			end
 		end;
 
-		["setmain"] = function(self, message)
+		setmain = function(self, message)
 			if not isAdmin(message.author.id) then return end
 			--if message.author.id == owner then
 				mainChannel = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
@@ -176,7 +176,7 @@ return function(ENV)
 			--end
 		end;
 
-		["setdest"] = function(self, message)
+		setdest = function(self, message)
 			if not isAdmin(message.author.id) then return end
 			--if message.author.id == owner then
 				destChannel = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
@@ -191,11 +191,11 @@ return function(ENV)
 			--end
 		end;
 
-		["setchan"] = function(self, message)
+		setchan = function(self, message)
 			return self["setdest"](message) -- Alias command
 		end;
 
-		["setpay"] = function(self, message)
+		setpay = function(self, message)
 			if not isAdmin(message.author.id) then return end
 			local args = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if args == nil or args == "" then return end
@@ -210,7 +210,7 @@ return function(ENV)
 			end
 		end;
 
-		["setgoal"] = function(self, message)
+		setgoal = function(self, message)
 			if not isAdmin(message.author.id) then return end
 			local args = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if args == nil or args == "" then return end
@@ -225,7 +225,7 @@ return function(ENV)
 			end
 		end;
 
-		["setrate"] = function(self, message)
+		setrate = function(self, message)
 			if not isAdmin(message.author.id) then return end
 			local args = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if args == nil or args == "" then return end
