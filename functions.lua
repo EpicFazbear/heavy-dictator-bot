@@ -48,7 +48,15 @@ return function(ENV)
 				end
 			end;
 		
-		--//TO-DO: make addCoal function
+		
+		addCoal = function(userId, amount)
+				if type(userMinedCoal[userId]) == "number" then
+					 userMinedCoal[userId] = userMinedCoal[userId] + amount;
+				else 
+					userMinedCoal[userId] = amount;
+					return userMinedCoal[userId]
+				end
+			end;
 		
 	};
 end;
