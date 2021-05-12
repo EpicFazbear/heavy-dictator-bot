@@ -48,7 +48,7 @@ return function(ENV)
 				end
 			end;
 		
-		--//TO-DO: make addbalance function
+		--//TO-DO: make addCoal function
 		
 	};
 end;
