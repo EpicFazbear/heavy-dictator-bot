@@ -21,8 +21,9 @@ workers = {}
 
 minGoal = 100
 maxGoal = 300
-minPay = 750
-maxPay = 1000
+coalToRub = 4
+--[[minPay = 750 --//to be remoed
+maxPay = 1000]]
 cvRate = 0.015472
 goal = math.random(minGoal, maxGoal)
 
