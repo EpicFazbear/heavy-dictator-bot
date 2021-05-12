@@ -19,6 +19,7 @@ return function(ENV)
 		end;
 
 		balances = {}; -- will be replaced with database once available // RUB only
+		userMinedCoal = {}; --//will be modified by getCoal() and addCoal()
 
 		getBalance = function(userId)
 			if type(balances[userId]) == "number" then
@@ -37,6 +38,18 @@ return function(ENV)
 				balances[userId] = balances[userId] + amount
 			end
 		end;
+		
+		getCoal = function(userId)
+				if type(userMinedCoal[userId]) == "number" then
+					return userMinedCoal[userId]
+				else 
+					userMinedCoal[userId] = 0;
+					return userMinedCoal[userId]
+				end
+			end;
+		
+		--//TO-DO: make addbalance function
+		
 	};
 end;
 
