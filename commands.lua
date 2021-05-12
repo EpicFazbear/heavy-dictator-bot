@@ -105,12 +105,13 @@ return function(ENV)
 
 		{Name="help", Run=function(self, message)
 			local IsAnAdmin = isAdmin(message.author.id)
-			message:reply("`Prefix = \"/\"`\
+			message:reply("`Prefix = \";\"`\
 	These are all of the public commands.\
 		`minecoal` - Mines a piece of coal.\
 		`goal` - Shows the amount of pieces of coal the goal is set for this session.\
 		`total` - Shows total pieces of coal mined.\
-		`paycheck` - Gives you the government paycheck.")
+		`paycheck` - Gives you the government paycheck.\
+		`balance` - Shows you the total amount of balance you current have. (An economy is in the works!)")
 			message:reply("```~~ This bot is in active development. ~~\nIf you have any suggestions, DM them to the owner of this bot. (Günsche シ#6704)```")
 			if IsAnAdmin then
 				message:reply("----------------------------------------------------------\
