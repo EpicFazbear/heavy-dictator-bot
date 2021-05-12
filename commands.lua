@@ -227,7 +227,7 @@ return function(ENV)
 			elseif balance == 0 then
 				message:reply("You have NO total balance in your account. GET WORKING IF YOU WANT TO GET A PAYCHECK!!")
 				message:addReaction("❌")
-			elseif balance <0 then -- balance < 0
+			elseif balance < 0 then
 				message:reply("You are IN DEBT BY `".. tostring(math.abs(balance)) .." RUB`. GET BACK TO WORK AND PAY IT OFF!!")
 				message:addReaction("❌")
 			end
