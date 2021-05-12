@@ -7,8 +7,8 @@ return function(ENV)
 			if message.channel.id ~= coalmine then return end
 			if not reached then
 				local mined = math.random(1,3)
-					--//TO-DO: create table to contain how much coal a user has mined
-					--//TO-DO #2: create conversion to determine paycheck based on how much coal has been mined by user.
+				addCoal(message.author.id, mined)
+				
 				message:reply("Mined `"..mined.."` piece(s) of coal.")
 				local found2 = false
 				for _, worker in pairs(workers) do
@@ -75,7 +75,7 @@ return function(ENV)
 					message:addReaction("❌")
 				else -- Found worker in contribution list, not in paid list
 					table.insert(paid, message.member.id)
-					local owed = math.random(minPay, maxPay)
+					local owed = getCoal(message.author.id)*coalToRub
 						--//TO-DO: replace owed with pay in accordance with coal mined 
 						
 					addBalance(message.author.id, owed)
