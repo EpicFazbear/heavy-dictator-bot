@@ -1,4 +1,7 @@
 --local SQL = require("./deps/protgres/postgresLuvit.lua")
+-- TODO: Move all variables from botmain into here (Might consider renaming this file due to this)
+-- Rename functions.lua --> botinit.lua
+-- Rename commands.lua --> botcmds.lua
 
 -- Functions used by the other .lua files
 return function(ENV)

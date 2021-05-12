@@ -1,5 +1,6 @@
 -- Remember to update version in package.lua!
 -- TODO: Debug cmd.Run(cmd, message) switched with cmd:Run(message)
+-- TODO: Ease of testing (if running straight from luvit, emulate ENV and SQL) (in invisible, don't post a startup message to the main channel)
 
 local discordia = require("discordia")
 local json = require("json")
@@ -9,25 +10,25 @@ client = discordia.Client()
 prefix = ENV.PREFIX
 adminsOnly = ENV.ADMINS_ONLY == "true"
 ownerOverride = ENV.OWNER_OVERRIDE
-if ownerOverride == "" then ownerOverride = nil end
-admins = json.decode(ENV.ADMINS)
+local ran, returns = pcall(function() return json.decode(ENV.ADMINS) end)
+admins = (ran == true and returns) or {}
 table.insert(admins, owner)
-
 
 mainChannel = ENV.MAIN_CHANNEL
 destChannel = ENV.DEST_OVERRIDE
 coalmine = ENV.COAL_OVERRIDE
-coal = 0 -- TODO: Add percentages (amount person worked to total) for payout
-reached = false
-paid = {}
-workers = {}
-
 minGoal = 100 -- ENV.GOAL_MIN
 maxGoal = 300 -- ENV.GOAL_MAX
 minPay = 750 -- ENV.PAY_MIN
 maxPay = 1000 -- ENV.PAY_MAX
 cvRate = 0.015472 -- ENV.CV_RATE -- TODO: better way of doing this (ratio maybe)
+
+coal = 0 -- TODO: Add percentages (amount person worked to total) for payout
 goal = math.random(minGoal, maxGoal)
+-- Add an option between percentages (amount worked), random (current), and static (based on the goal amount)
+reached = false
+paid = {}
+workers = {}
 
 
 -- Injects our external functions into this main script
@@ -38,7 +39,8 @@ setfenv(1, previous)
 
 
 client:on("ready", function()
-	owner = ownerOverride or client.owner.id
+	-- Below may cause error, catch or pcall?
+	owner = (client:getUser(ownerOverride) ~= nil and ownerOverride) or client.owner.id
 	local message = client:getChannel(mainChannel):send("***Starting bot..***")
 	if ENV.INVISIBLE == "true" then
 		client:setStatus("invisible") -- Bravo Six, going dark.
@@ -102,4 +104,8 @@ client:on("messageCreate", function(message)
 end)
 
 
-client:run("Bot ".. ENV.BOT_TOKEN);
+if type(ENV.BOT_TOKEN) == "string" then
+	client:run("Bot ".. ENV.BOT_TOKEN);
+else
+	print("LUA test passed with zero errors!\nNOTE: To actually execute the bot, you'll need to do `heroku local` (Granted you have the Heroku CLI installed).")
+end

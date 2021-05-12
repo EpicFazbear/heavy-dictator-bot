@@ -2,7 +2,7 @@
 return function(ENV)
 	setfenv(1, ENV)
 
-	return {
+	local commands = {
 		["minecoal"] = function(self, message)
 			if message.channel.id ~= coalmine then return end
 			if not reached then
@@ -49,7 +49,7 @@ return function(ENV)
 			message:reply("About `".. goal - coal .."` more pieces of coal need to be mined. NOW BACK TO WORK!!")
 		end;
 
-		["paycheck"] = function(self, message) -- Todo: Fix /Paycheck
+		["paycheck"] = function(self, message)
 			if message.channel.id ~= coalmine then return end
 			if reached then
 				local found = false
@@ -109,13 +109,12 @@ return function(ENV)
 
 		["help"] = function(self, message)
 			local IsAnAdmin = isAdmin(message.author.id)
-			message:reply("`Prefix = \"/\"`\
-	These are all of the public commands.\
+			message:reply("```~~ This bot is in active development. ~~\nIf you have any suggestions, DM them to the owner of this bot: Mattsoft™#0074 (formerly Günsche シ#6704)```\n`Prefix = \"".. tostring(prefix) .."\"`")
+			message:reply("These are all of the public commands.\
 		`minecoal` - Mines a piece of coal.\
 		`goal` - Shows the amount of pieces of coal the goal is set for this session.\
 		`total` - Shows total pieces of coal mined.\
 		`paycheck` - Gives you the government paycheck.")
-			message:reply("```~~ This bot is in active development. ~~\nIf you have any suggestions, DM them to the owner of this bot. (Günsche シ#6704)```")
 			if IsAnAdmin then
 				message:reply("----------------------------------------------------------\
 	These are all of the admin-only commands.\
@@ -135,7 +134,7 @@ return function(ENV)
 			end
 		end;
 
-		["deport"] = function(self, message)
+		["deport"] = function(self, message) -- TODO: Remove these, and in the long run, replace with database settings and stuffs
 			if not isAdmin(message.author.id) then return end
 			local userid = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			local user = client:getGuild("662529921460994078"):getMember(userid)
@@ -235,4 +234,13 @@ return function(ENV)
 			end
 		end;
 	};
+	
+	-- TODO: Initialize the help command here
+--[[
+	["cmdName"] = {level = 1; description = "Hey there";
+	Run = function()
+		print("Hey there")
+	end}
+--]]
+	-- TODO: Add function IF channel-locked command is ran in an invalid channel, mark it with a reaction
 end;
