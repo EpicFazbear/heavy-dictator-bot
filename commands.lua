@@ -76,7 +76,6 @@ return function(ENV)
 				else -- Found worker in contribution list, not in paid list
 					table.insert(paid, message.member.id)
 					local owed = getCoal(message.author.id)*coalToRub
-						--//TO-DO: replace owed with pay in accordance with coal mined 
 						
 					addBalance(message.author.id, owed)
 					local foreign = math.floor((owed * cvRate) * 100) / 100
