@@ -8,6 +8,7 @@ return function(ENV)
 			if message.channel.id ~= coalmine then return end
 			if not reached then
 				local mined = math.random(1,3)
+				addCoal(message.author.id, mined)
 				message:reply("Mined `"..mined.."` piece(s) of coal.")
 				local found2 = false
 				for _, worker in pairs(workers) do
@@ -32,12 +33,14 @@ return function(ENV)
 				if coal >= goal and not reached then
 					reached = true
 					coal = goal
+					message:addReaction("❌")
 					local message = message:reply({content = "**We have reached our goal of `"..goal.."` pieces of coal.** ***Thank you for supporting the Soviet Union!***\n```Do \""..prefix.."paycheck\" to get your Soviet government paychecks.```", tts = true})
 					message:pin()
 				end
 			else
 				message:addReaction("❌")
 				 message:reply("WE HAVE ALREADY REACHED OUR GOAL OF `"..goal.."` PIECES OF COAL!!")
+
 				--//quick fix because people don't understand what ❌ is.
 			end
 		end;
@@ -78,7 +81,7 @@ return function(ENV)
 					local owed = getCoal(message.author.id) * coalToRub -- math.random(minPay, maxPay)
 					addBalance(message.author.id, owed)
 					local foreign = math.floor((owed * cvRate) * 100) / 100
-					message:reply("Here is your paycheck of `".. owed .."` RUB. (About `$".. foreign .."` in CAPITALIST DOLLARS!!)")
+					message:reply("Here is your paycheck of `".. owed .." RUB`. (About `$".. foreign .."` in CAPITALIST DOLLARS!!)")
 					message:addReaction("💰")
 				end
 			else
@@ -107,9 +110,14 @@ return function(ENV)
 			workers = {}
 			coal = 0
 			goal = math.random(minGoal, maxGoal)
+
 			message:reply("`Successfully restarted the coal mine operation!`")
 			client:getChannel(coalmine):send("`We are now aiming for '".. goal .."' pieces of coal.`")
 		end;
+
+
+
+	
 
 		["setmain"] = function(self, message)
 			if not isAdmin(message.author.id) then return end
@@ -183,6 +191,7 @@ return function(ENV)
 				cvRate = tonumber(args)
 				message:reply("`Successfully made the following changes:`\n```Conversion rate: 1 USD == ".. 1 / cvRate .." RUB```")
 			end
+
 		end;
 
 		["balance"] = function(self, message)
@@ -197,6 +206,7 @@ return function(ENV)
 				message:reply("You are IN DEBT BY `".. tostring(math.abs(balance)) .." RUB`. GET BACK TO WORK AND PAY IT OFF!!")
 				message:addReaction("❌")
 			end
+
 		end;
 	};
 
@@ -268,3 +278,4 @@ end;
 		end
 	end;
 --]]
+

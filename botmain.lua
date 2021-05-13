@@ -29,7 +29,6 @@ reached = false
 paid = {}
 workers = {}
 
-
 -- Injects our external variables and functions into the main environment.
 local functions = require("./functions.lua")(getfenv(1))
 local previous = getfenv(1)
@@ -110,3 +109,4 @@ if type(BOT_TOKEN) == "string" then
 else
 	print("LUA test passed with zero errors!\nNOTE: To actually execute the bot, you'll need to do `heroku local` (Granted you have the Heroku CLI installed).")
 end;
+

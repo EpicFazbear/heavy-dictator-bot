@@ -26,7 +26,6 @@ return function(ENV)
 			return false
 		end;
 
-		
 		balances = {}; -- will be replaced with database once available // RUB only
 		userMinedCoal = {}; -- will be modified by getCoal() and addCoal()
 
@@ -69,5 +68,8 @@ return function(ENV)
 		clearCoal = function(userId, amount)
 			userMinedCoal[userId] = 0;
 		end;
+    
 	};
 end;
+
+	
