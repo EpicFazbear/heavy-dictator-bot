@@ -32,13 +32,14 @@ return function(ENV)
 				if coal >= goal and not reached then
 					reached = true
 					coal = goal
+					message:addReaction("❌")
 					local message = message:reply({content = "**We have reached our goal of `"..goal.."` pieces of coal.** ***Thank you for supporting the Soviet Union!***\n```Do \""..prefix.."paycheck\" to get your Soviet government paychecks.```", tts = true})
 					message:pin()
 				end
 			else
 				message:addReaction("❌")
-				local message = message:reply({content = "**We have reached our goal of `"..goal.."` pieces of coal.** ***Thank you for supporting the Soviet Union!***\n```Do \""..prefix.."paycheck\" to get your Soviet government paychecks.```", tts = true})
-				message:pin() --//quick fix because people don't understand what ❌ is.
+				local message = message:reply("**We have reached our goal of `"..goal.."` pieces of coal.** ***Thank you for supporting the Soviet Union!***")
+				message:pin()--//quick fix because people don't understand what ❌ is.
 			end
 		end};
 
