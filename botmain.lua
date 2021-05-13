@@ -1,66 +1,89 @@
+-- This is our main environment for the Discord bot. --
+
 local discordia = require("discordia")
 local json = require("json")
 local ENV = process.env
+local BOT_TOKEN = ENV.BOT_TOKEN
 
 client = discordia.Client()
 prefix = ENV.PREFIX
 adminsOnly = ENV.ADMINS_ONLY == "true"
 ownerOverride = ENV.OWNER_OVERRIDE
-if ownerOverride == "" then ownerOverride = nil end
-admins = json.decode(ENV.ADMINS)
-table.insert(admins, owner)
-
+local ran, returns = pcall(function() return json.decode(ENV.ADMINS) end)
+admins = (ran == true and returns) or {}
 
 mainChannel = ENV.MAIN_CHANNEL
-destChannel = nil
-coalmine = nil
+destChannel = ENV.DEST_OVERRIDE
+coalmine = ENV.COAL_OVERRIDE
+minGoal = 100 -- ENV.GOAL_MIN
+maxGoal = 300 -- ENV.GOAL_MAX
+minPay = 750 -- ENV.PAY_MIN (Unused temporarily)
+maxPay = 1000 -- ENV.PAY_MAX (Unused temporarily)
+cvRate = (967/62500) -- ENV.CV_RATE // Same as 0.015472, this is in simplest form.
+coalToRub = 8
+
 coal = 0
+goal = math.random(minGoal, maxGoal)
+-- Add an option between percentages (amount worked), random (current), and static (based on the goal amount)
 reached = false
 paid = {}
 workers = {}
 
-minGoal = 100
-maxGoal = 300
-coalToRub = 8
-minPay = 750 --//unused temporarily
-maxPay = 1000 --//unused temporarily
-cvRate = (967/62500) --//same as 0.015472, this is in simplest form.
-goal = math.random(minGoal, maxGoal)
-
-
+-- Injects our external variables and functions into the main environment.
 local functions = require("./functions.lua")(getfenv(1))
 local previous = getfenv(1)
 for i,v in pairs(functions) do previous[i] = v end
-setfenv(1, previous) -- Loads our functions
+setfenv(1, previous)
 
 
 client:on("ready", function()
+	owner = client:getUser(ownerOverride) or client.owner.id
+	table.insert(admins, owner)
+	print("Heavy dictator is now activating..")
+	local message
 	if ENV.INVISIBLE == "true" then
 		client:setStatus("invisible") -- Bravo Six, going dark.
+	else
+		message = client:getChannel(mainChannel):send("***Starting bot..***")
+		client:setStatus("idle")
+		client:setGame("Initializing..")
 	end
-	if string.lower(ENV.STATUS) ~= "none" then
-		client:setGame(ENV.STATUS)
+	
+	-- TODO: in here, do loading sequence with SQL stuffs
+
+	if sql_thingy then
+		if message then
+			message:setContent(message.content .. "\n***Initializing SQL data sync.. (Retrieving data from database)***")
+		end
+		print("Initializing SQL data sync.. (Retrieving data from database)")
 	end
-	owner = ownerOverride or client.owner.id
-	client:getChannel(mainChannel):send("***{!} Heavy dictator has been started. {!}***")
-	print("\nHeavy dictator now activating.. Gulag Mode enabled.")
+
+	if ENV.INVISIBLE ~= "true" then
+		message:setContent(message.content .. "\n***{!} Heavy dictator has been started. {!}***")
+		client:setStatus("online")
+		if string.lower(ENV.STATUS) ~= "none" then
+			client:setGame(ENV.STATUS)
+		end
+	end
+	print("Heavy dictator has been started. Gulag Mode enabled.")
 end)
 
 
 client:on("messageCreate", function(message)
 	if message.author == client.user or message.author.bot == true or message.author.discriminator == 0000 then return end
 
-	if string.sub(string.lower(message.content), 1, 1) == prefix then
-		for i=1, #commands do -- Runs through our list of commands and connects them to our messageCreate connection
-			local cmd = commands[i]
-			if string.sub(string.lower(message.content), 1, string.len(prefix) + string.len(cmd.Name)) == string.lower(prefix .. cmd.Name) then
+	local cmdstr = string.lower(message.content)
+	if string.sub(cmdstr, 1, 1) == prefix then
+		for cmd, data in pairs(commands) do -- Runs through our list of commands and connects them to our messageCreate connection.
+			if string.sub(cmdstr, 1, string.len(prefix) + string.len(cmd)) == string.lower(prefix .. cmd) then
+				-- TODO: Check command level here, deny access if user doesn't have permission (use botinit/functions.lua)
 				local ran, error = pcall(function()
-					cmd.Run(cmd, message)
+					cmd:Run(message)
 				end)
 				if not ran then
 					message:reply("```~~ AN INTERNAL ERROR HAS OCCURRED ~~\n".. tostring(error) .."```")
 				end
-			return end
+			break end
 		end
 	return end
 
@@ -69,9 +92,6 @@ client:on("messageCreate", function(message)
 		if message.author.id == id then
 			allowed = true
 		end
-	end
-	if message.author.id == owner then
-		allowed = true
 	end
 	if message.channel.id == mainChannel and destChannel and allowed then
 		local channel = client:getChannel(destChannel)
@@ -84,4 +104,8 @@ client:on("messageCreate", function(message)
 end)
 
 
-client:run("Bot ".. ENV.BOT_TOKEN);
+if type(BOT_TOKEN) == "string" then
+	client:run("Bot ".. BOT_TOKEN);
+else
+	print("LUA test passed with zero errors!\nNOTE: To actually execute the bot, you'll need to do `heroku local` (Granted you have the Heroku CLI installed).")
+end;
