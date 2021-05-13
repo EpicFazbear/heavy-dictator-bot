@@ -1,7 +1,7 @@
 return {
-  name = "discord-bot-hosting",
+  name = "heavy-dictator-bot",
   version = "1.2.0",
-  description = "Hosting discord bots on Heroku (Heavy Dictator)",
+  description = "A lua-based Discord bot.",
   main = "botmain.lua",
   scripts = {
     start = "botmain.lua"
