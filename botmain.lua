@@ -21,7 +21,7 @@ workers = {}
 
 minGoal = 100
 maxGoal = 300
-coalToRub = 4
+coalToRub = 8
 minPay = 750 --//unused temporarily
 maxPay = 1000 --//unused temporarily
 cvRate = 0.015472
