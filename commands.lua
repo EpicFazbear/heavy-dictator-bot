@@ -73,7 +73,7 @@ return function(ENV)
 					message:addReaction("❌")
 				else -- Found worker in contribution list, not in paid list
 					table.insert(paid, message.member.id)
-					local owed = getCoal(message.author.id)*coalToRub
+					local owed = getCoal(message.author.id) * coalToRub -- math.random(minPay, maxPay)
 					addBalance(message.author.id, owed)
 					local foreign = math.floor((owed * cvRate) * 100) / 100
 					message:reply("Here is your paycheck of `".. owed .." RUB`. (About `$".. foreign .."` in CAPITALIST DOLLARS!!)")
