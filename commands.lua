@@ -8,7 +8,6 @@ return function(ENV)
 			if not reached then
 				local mined = math.random(1,3)
 				addCoal(message.author.id, mined)
-				
 				message:reply("Mined `"..mined.."` piece(s) of coal.")
 				local found2 = false
 				for _, worker in pairs(workers) do
@@ -52,7 +51,6 @@ return function(ENV)
 		end};
 
 		{Name="paycheck", Run=function(self, message) -- Todo: Fix /Paycheck
-				
 			if message.channel.id ~= coalmine then return end
 			if reached then
 				local found = false
@@ -76,7 +74,6 @@ return function(ENV)
 				else -- Found worker in contribution list, not in paid list
 					table.insert(paid, message.member.id)
 					local owed = getCoal(message.author.id)*coalToRub
-						
 					addBalance(message.author.id, owed)
 					local foreign = math.floor((owed * cvRate) * 100) / 100
 					message:reply("Here is your paycheck of `".. owed .." RUB`. (About `$".. foreign .."` in CAPITALIST DOLLARS!!)")
