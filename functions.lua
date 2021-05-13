@@ -25,5 +25,49 @@ return function(ENV)
 			end
 			return false
 		end;
+
+		
+		balances = {}; -- will be replaced with database once available // RUB only
+		userMinedCoal = {}; -- will be modified by getCoal() and addCoal()
+
+		getBalance = function(userId)
+			if type(balances[userId]) == "number" then
+				return balances[userId]
+			else
+				balances[userId] = 0
+				return balances[userId]
+			end
+		end;
+
+		addBalance = function(userId, amount)
+			if type(balances[userId]) == "number" then
+				balances[userId] = balances[userId] + amount
+			else
+				balances[userId] = 0
+				balances[userId] = balances[userId] + amount
+			end
+		end;
+
+		getCoal = function(userId)
+			if type(userMinedCoal[userId]) == "number" then
+				return userMinedCoal[userId]
+			else 
+				userMinedCoal[userId] = 0;
+				return userMinedCoal[userId]
+			end
+		end;
+
+		addCoal = function(userId, amount)
+			if type(userMinedCoal[userId]) == "number" then
+				userMinedCoal[userId] = userMinedCoal[userId] + amount;
+			else 
+				userMinedCoal[userId] = amount;
+				return userMinedCoal[userId]
+			end
+		end;
+
+		clearCoal = function(userId, amount)
+			userMinedCoal[userId] = 0;
+		end;
 	};
 end;
