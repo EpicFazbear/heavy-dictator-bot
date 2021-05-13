@@ -60,7 +60,6 @@ return function(ENV)
 		clearCoal = function(userId, amount)
 			userMinedCoal[userId] = 0;
 		end;
-		
 	};
 end;
 
