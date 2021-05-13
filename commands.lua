@@ -1,6 +1,7 @@
--- Our full list of commands.
+-- Our full list of commands. --
+
 return function(ENV)
-	setfenv(1, ENV)
+	setfenv(1, ENV) -- Connects the main environment from botmain.lua into this file.
 
 	local commands = {
 		["minecoal"] = function(self, message)
@@ -107,59 +108,6 @@ return function(ENV)
 			client:getChannel(coalmine):send("`We are now aiming for '".. goal .."' pieces of coal.`")
 		end;
 
-		["help"] = function(self, message)
-			local IsAnAdmin = isAdmin(message.author.id)
-			message:reply("```~~ This bot is in active development. ~~\nIf you have any suggestions, DM them to the owner of this bot: Mattsoft™#0074 (formerly Günsche シ#6704)```\n`Prefix = \"".. tostring(prefix) .."\"`")
-			message:reply("These are all of the public commands.\
-		`minecoal` - Mines a piece of coal.\
-		`goal` - Shows the amount of pieces of coal the goal is set for this session.\
-		`total` - Shows total pieces of coal mined.\
-		`paycheck` - Gives you the government paycheck.")
-			if IsAnAdmin then
-				message:reply("----------------------------------------------------------\
-	These are all of the admin-only commands.\
-		`setmine <channel-id>` - Changes the coal mining channel.\
-		`reset` - Resets the mined coal quota.\
-		`deport <user-id>` - Sends a member of the *Soviet Australia* server to the Gulag.\
-		`release <user-id>` - Releases a member of the *Soviet Australia* server to the Gulag.\
-		`setpay <min,max>` - Sets the minimum and maximum amount of pay.\
-		`setgoal <min,max>` - Sets the minimum and maximum goal.\
-		`setrate <conversion-rate>` - Sets the conversion rate between USD and RUB.")
-			end
-			if message.author.id == owner then
-				message:reply("----------------------------------------------------------\
-	These are all of the owner-only commands. (The owner of this bot is: <@".. owner ..">)\
-		`setmain <channel-id>` - Changes the main broadcast channel.\
-		`setdest <channel-id>` - Changes the main destiantion channel.")
-			end
-		end;
-
-		["deport"] = function(self, message) -- TODO: Remove these, and in the long run, replace with database settings and stuffs
-			if not isAdmin(message.author.id) then return end
-			local userid = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
-			local user = client:getGuild("662529921460994078"):getMember(userid)
-			if user then
-				user:removeRole("662532187978989579")
-				user:addRole("680958267186479151")
-				message:reply("`Successfully deported ".. user.username .."#".. user.user.discriminator .." to the gulag!`")
-			else
-				message:reply("`User does not exist.`")
-			end
-		end;
-
-		["release"] = function(self, message)
-			if not isAdmin(message.author.id) then return end
-			local userid = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
-			local user = client:getGuild("662529921460994078"):getMember(userid)
-			if user then
-				user:removeRole("680958267186479151")
-				user:addRole("662532187978989579")
-				message:reply("`Successfully released ".. user.username .."#".. user.user.discriminator .." from the gulag!`")
-			else
-				message:reply("`User does not exist.`")
-			end
-		end;
-
 		["setmain"] = function(self, message)
 			if not isAdmin(message.author.id) then return end
 			--if message.author.id == owner then
@@ -234,13 +182,72 @@ return function(ENV)
 			end
 		end;
 	};
-	
+
 	-- TODO: Initialize the help command here
+	-- FOR each command data, add a Name variable
 --[[
-	["cmdName"] = {level = 1; description = "Hey there";
+	["cmdName"] = {Level = 1; Description = "Hey there";
 	Run = function()
 		print("Hey there")
 	end}
 --]]
-	-- TODO: Add function IF channel-locked command is ran in an invalid channel, mark it with a reaction
+
+--[[
+
+["help"] = function(self, message)
+	local IsAnAdmin = isAdmin(message.author.id)
+	message:reply("```~~ This bot is in active development. ~~\nIf you have any suggestions, DM them to the owner of this bot: Mattsoft™#0074 (formerly Günsche シ#6704)```\n`Prefix = \"".. tostring(prefix) .."\"`")
+	message:reply("These are all of the public commands.\
+	`minecoal` - Mines a piece of coal.\
+	`goal` - Shows the amount of pieces of coal the goal is set for this session.\
+	`total` - Shows total pieces of coal mined.\
+	`paycheck` - Gives you the government paycheck.")
+	if IsAnAdmin then
+		message:reply("----------------------------------------------------------\
+	These are all of the admin-only commands.\
+	`setmine <channel-id>` - Changes the coal mining channel.\
+	`reset` - Resets the mined coal quota.\
+	`setpay <min,max>` - Sets the minimum and maximum amount of pay.\
+	`setgoal <min,max>` - Sets the minimum and maximum goal.\
+	`setrate <conversion-rate>` - Sets the conversion rate between USD and RUB.")
+	end
+	if message.author.id == owner then
+		message:reply("----------------------------------------------------------\
+These are all of the owner-only commands. (The owner of this bot is: <@".. owner ..">)\
+	`setmain <channel-id>` - Changes the main broadcast channel.\
+	`setdest <channel-id>` - Changes the main destiantion channel.")
+	end
 end;
+
+--]]
+	return commands
+end;
+
+--[[
+	-- TODO: In the long run, re-add these commands with database integration (serverdata table)
+	["deport"] = function(self, message) -- Deport targeted user to the Gulag
+		if not isAdmin(message.author.id) then return end
+		local userid = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
+		local user = client:getGuild("000000000000000000"):getMember(userid)
+		if user then
+			user:removeRole("000000000000000000")
+			user:addRole("000000000000000000")
+			message:reply("`Successfully deported ".. user.username .."#".. user.user.discriminator .." to the gulag!`")
+		else
+			message:reply("`User does not exist.`")
+		end
+	end;
+
+	["release"] = function(self, message) -- Release targeted user from the Gulag
+		if not isAdmin(message.author.id) then return end
+		local userid = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
+		local user = client:getGuild("000000000000000000"):getMember(userid)
+		if user then
+			user:removeRole("000000000000000000")
+			user:addRole("000000000000000000")
+			message:reply("`Successfully released ".. user.username .."#".. user.user.discriminator .." from the gulag!`")
+		else
+			message:reply("`User does not exist.`")
+		end
+	end;
+--]]
