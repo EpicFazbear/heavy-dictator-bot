@@ -30,7 +30,7 @@ paid = {}
 workers = {}
 
 -- Injects our external variables and functions into the main environment.
-local functions = require("./functions.lua")(getfenv(1))
+local functions = require("./botinit.lua")(getfenv(1))
 local previous = getfenv(1)
 for i,v in pairs(functions) do previous[i] = v end
 setfenv(1, previous)

@@ -19,7 +19,7 @@ return function(ENV)
 				if not found2 then
 					table.insert(workers, message.member.id)
 				end
-	--[[
+			--[[
 				if mined == 1 then
 					message:addReaction("⛏")
 				elseif mined == 2 then
@@ -28,7 +28,7 @@ return function(ENV)
 					message:addReaction("⛏")
 					message:addReaction("⚒")
 				end
-	--]]
+			--]]
 				coal = coal + mined
 				if coal >= goal and not reached then
 					reached = true
