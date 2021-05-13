@@ -73,7 +73,8 @@ return function(ENV)
 					message:addReaction("❌")
 				else -- Found worker in contribution list, not in paid list
 					table.insert(paid, message.member.id)
-					local owed = math.random(minPay, maxPay)
+					local owed = getCoal(message.author.id) * coalToRub -- math.random(minPay, maxPay)
+					addBalance(message.author.id, owed)
 					local foreign = math.floor((owed * cvRate) * 100) / 100
 					message:reply("Here is your paycheck of `".. owed .."` RUB. (About `$".. foreign .."` in CAPITALIST DOLLARS!!)")
 					message:addReaction("💰")
@@ -179,6 +180,20 @@ return function(ENV)
 			if tonumber(args) then
 				cvRate = tonumber(args)
 				message:reply("`Successfully made the following changes:`\n```Conversion rate: 1 USD == ".. 1 / cvRate .." RUB```")
+			end
+		end;
+
+		["balance"] = function(self, message)
+			if message.channel.id ~= coalmine then return end
+			local balance = getBalance(message.author.id)
+			if balance > 0 then
+				message:reply("You have a total balance of `".. tostring(balance) .." RUB` in your account. NOW GET BACK TO WORK!!")
+			elseif balance == 0 then
+				message:reply("You have NO total balance in your account. GET WORKING IF YOU WANT TO GET A PAYCHECK!!")
+				message:addReaction("❌")
+			elseif balance < 0 then
+				message:reply("You are IN DEBT BY `".. tostring(math.abs(balance)) .." RUB`. GET BACK TO WORK AND PAY IT OFF!!")
+				message:addReaction("❌")
 			end
 		end;
 	};
