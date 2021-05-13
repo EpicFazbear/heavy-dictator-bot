@@ -19,7 +19,7 @@ minGoal = 100 -- ENV.GOAL_MIN
 maxGoal = 300 -- ENV.GOAL_MAX
 minPay = 750 -- ENV.PAY_MIN
 maxPay = 1000 -- ENV.PAY_MAX
-cvRate = (967/62500) --//same as 0.015472, this is in simplest form.
+cvRate = (967/62500) -- ENV.CV_RATE // Same as 0.015472, this is in simplest form.
 coalToRub = 8
 
 coal = 0 -- TODO: Add percentages (amount person worked to total) for payout

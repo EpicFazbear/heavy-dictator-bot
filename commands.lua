@@ -37,7 +37,7 @@ return function(ENV)
 				end
 			else
 				message:addReaction("❌")
-				 message:reply("**We have reached our goal of `"..goal.."` pieces of coal.** ***Thank you for supporting the Soviet Union!***")
+				 message:reply("WE HAVE ALREADY REACHED OUR GOAL OF `"..goal.."` PIECES OF COAL!!")
 				--//quick fix because people don't understand what ❌ is.
 			end
 		end;
