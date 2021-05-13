@@ -24,7 +24,7 @@ maxGoal = 300
 coalToRub = 8
 minPay = 750 --//unused temporarily
 maxPay = 1000 --//unused temporarily
-cvRate = 0.015472
+cvRate = (967/62500) --//same as 0.015472, this is in simplest form.
 goal = math.random(minGoal, maxGoal)
 
 
