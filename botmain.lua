@@ -17,8 +17,8 @@ destChannel = ENV.DEST_OVERRIDE
 coalmine = ENV.COAL_OVERRIDE
 minGoal = 100 -- ENV.GOAL_MIN
 maxGoal = 300 -- ENV.GOAL_MAX
-minPay = 750 -- ENV.PAY_MIN
-maxPay = 1000 -- ENV.PAY_MAX
+minPay = 750 -- ENV.PAY_MIN (Unused temporarily)
+maxPay = 1000 -- ENV.PAY_MAX (Unused temporarily)
 cvRate = (967/62500) -- ENV.CV_RATE // Same as 0.015472, this is in simplest form.
 coalToRub = 8
 
@@ -109,4 +109,3 @@ if type(BOT_TOKEN) == "string" then
 else
 	print("LUA test passed with zero errors!\nNOTE: To actually execute the bot, you'll need to do `heroku local` (Granted you have the Heroku CLI installed).")
 end;
-

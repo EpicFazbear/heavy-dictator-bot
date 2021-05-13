@@ -40,8 +40,7 @@ return function(ENV)
 			else
 				message:addReaction("❌")
 				 message:reply("WE HAVE ALREADY REACHED OUR GOAL OF `"..goal.."` PIECES OF COAL!!")
-
-				--//quick fix because people don't understand what ❌ is.
+				--// Quick fix because people don't understand what ❌ is.
 			end
 		end;
 
@@ -110,14 +109,9 @@ return function(ENV)
 			workers = {}
 			coal = 0
 			goal = math.random(minGoal, maxGoal)
-
 			message:reply("`Successfully restarted the coal mine operation!`")
 			client:getChannel(coalmine):send("`We are now aiming for '".. goal .."' pieces of coal.`")
 		end;
-
-
-
-	
 
 		["setmain"] = function(self, message)
 			if not isAdmin(message.author.id) then return end
@@ -191,7 +185,6 @@ return function(ENV)
 				cvRate = tonumber(args)
 				message:reply("`Successfully made the following changes:`\n```Conversion rate: 1 USD == ".. 1 / cvRate .." RUB```")
 			end
-
 		end;
 
 		["balance"] = function(self, message)
@@ -206,7 +199,6 @@ return function(ENV)
 				message:reply("You are IN DEBT BY `".. tostring(math.abs(balance)) .." RUB`. GET BACK TO WORK AND PAY IT OFF!!")
 				message:addReaction("❌")
 			end
-
 		end;
 	};
 
@@ -278,4 +270,3 @@ end;
 		end
 	end;
 --]]
-
