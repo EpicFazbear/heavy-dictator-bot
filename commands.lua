@@ -37,8 +37,8 @@ return function(ENV)
 				end
 			else
 				message:addReaction("❌")
-				local message = message:reply("**We have reached our goal of `"..goal.."` pieces of coal.** ***Thank you for supporting the Soviet Union!***")
-				message:pin()--//quick fix because people don't understand what ❌ is.
+				 message:reply("**We have reached our goal of `"..goal.."` pieces of coal.** ***Thank you for supporting the Soviet Union!***")
+				--//quick fix because people don't understand what ❌ is.
 			end
 		end;
 
