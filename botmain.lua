@@ -22,7 +22,7 @@ maxPay = 1000 -- ENV.PAY_MAX
 cvRate = (967/62500) -- ENV.CV_RATE // Same as 0.015472, this is in simplest form.
 coalToRub = 8
 
-coal = 0 -- TODO: Add percentages (amount person worked to total) for payout
+coal = 0
 goal = math.random(minGoal, maxGoal)
 -- Add an option between percentages (amount worked), random (current), and static (based on the goal amount)
 reached = false
