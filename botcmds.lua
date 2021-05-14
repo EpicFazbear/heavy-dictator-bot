@@ -4,19 +4,20 @@ return function(ENV)
 	setfenv(1, ENV) -- Connects the main environment from botmain.lua into this file.
 
 	local cmd_table = {
-		["minecoal"] = function(self, message)
+		["minecoal"] = {Level = 1, Description = "null",
+		Run = function(self, message)
 			if message.channel.id ~= coalmine then return end
 			if not reached then
 				local mined = math.random(1,3)
 				addCoal(message.author.id, mined)
-				message:reply("Mined `"..mined.."` piece(s) of coal.")
-				local found2 = false
+				message:reply("Mined `".. mined .."` piece(s) of coal.")
+				local found = false
 				for _, worker in pairs(workers) do
 					if worker == message.member.id then
-						found2 = true
+						found = true
 					end
 				end
-				if not found2 then
+				if not found then
 					table.insert(workers, message.member.id)
 				end
 			--[[
@@ -34,27 +35,30 @@ return function(ENV)
 					reached = true
 					coal = goal
 					message:addReaction("❌")
-					local message = message:reply({content = "**We have reached our goal of `"..goal.."` pieces of coal.** ***Thank you for supporting the Soviet Union!***\n```Do \""..prefix.."paycheck\" to get your Soviet government paychecks.```", tts = true})
+					local message = message:reply({content = "**We have reached our goal of `".. goal .."` pieces of coal.** ***Thank you for supporting the Soviet Union!***\n```Do \"".. prefix .."paycheck\" to get your Soviet government paychecks.```", tts = true})
 					message:pin()
 				end
 			else
 				message:addReaction("❌")
-				 message:reply("WE HAVE ALREADY REACHED OUR GOAL OF `"..goal.."` PIECES OF COAL!!")
+				 message:reply("WE HAVE ALREADY REACHED OUR GOAL OF `".. goal .."` PIECES OF COAL!!")
 				--// Quick fix because people don't understand what ❌ is.
 			end
-		end;
+		end};
 
-		["total"] = function(self, message)
+		["total"] = {Level = 1, Description = "null",
+		Run = function(self, message)
 			if message.channel.id ~= coalmine then return end
-			message:reply("A total of `"..coal.."` pieces coal has been mined. NOW BACK TO WORK!!")
-		end;
+			message:reply("A total of `".. coal .."` pieces coal has been mined. NOW BACK TO WORK!!")
+		end};
 
-		["goal"] = function(self, message)
+		["goal"] = {Level = 1, Description = "null",
+		Run = function(self, message)
 			if message.channel.id ~= coalmine then return end
 			message:reply("About `".. goal - coal .."` more pieces of coal need to be mined. NOW BACK TO WORK!!")
-		end;
+		end};
 
-		["paycheck"] = function(self, message)
+		["paycheck"] = {Level = 1, Description = "null",
+		Run = function(self, message)
 			if message.channel.id ~= coalmine then return end
 			if reached then
 				local found = false
@@ -87,9 +91,10 @@ return function(ENV)
 				message:reply("OUR GOAL OF `".. goal - coal .."` MORE PIECES OF COAL HASN'T BEEN REACHED YET. NOW BACK TO WORK!!")
 				message:addReaction("❌")
 			end
-		end;
+		end};
 
-		["setmine"] = function(self, message)
+		["setmine"] = {Level = 1, Description = "null",
+		Run = function(self, message)
 			if not isAdmin(message.author.id) then return end
 			coalmine = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if coalmine == nil or coalmine == "" then
@@ -100,9 +105,10 @@ return function(ENV)
 					message:reply("`Could not find the channel of the provided ID!`")
 				end
 			end
-		end;
+		end};
 
-		["reset"] = function(self, message)
+		["reset"] = {Level = 1, Description = "null",
+		Run = function(self, message)
 			if not isAdmin(message.author.id) then return end
 			reached = false
 			paid = {}
@@ -111,9 +117,10 @@ return function(ENV)
 			goal = math.random(minGoal, maxGoal)
 			message:reply("`Successfully restarted the coal mine operation!`")
 			client:getChannel(coalmine):send("`We are now aiming for '".. goal .."' pieces of coal.`")
-		end;
+		end};
 
-		["setmain"] = function(self, message)
+		["setmain"] = {Level = 1, Description = "null",
+		Run = function(self, message)
 			if not isAdmin(message.author.id) then return end
 			--if message.author.id == owner then
 				mainChannel = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
@@ -126,9 +133,10 @@ return function(ENV)
 					end
 				end
 			--end
-		end;
+		end};
 
-		["setdest"] = function(self, message)
+		["setdest"] = {Level = 1, Description = "null",
+		Run = function(self, message)
 			if not isAdmin(message.author.id) then return end
 			--if message.author.id == owner then
 				destChannel = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
@@ -141,13 +149,15 @@ return function(ENV)
 					end
 				end
 			--end
-		end;
+		end};
 
-		["setchan"] = function(self, message)
+		["setchan"] = {Level = 1, Description = "null",
+		Run = function(self, message)
 			return self["setdest"](message) -- Alias command
-		end;
+		end};
 
-		["setpay"] = function(self, message)
+		["setpay"] = {Level = 1, Description = "null",
+		Run = function(self, message)
 			if not isAdmin(message.author.id) then return end
 			local args = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if args == nil or args == "" then return end
@@ -160,9 +170,10 @@ return function(ENV)
 				maxPay = num2
 				message:reply("`Successfully made the following changes:`\n```Minimum pay (in RUB): ".. minPay .."\nMaximum pay (in RUB): ".. maxPay .."```")
 			end
-		end;
+		end};
 
-		["setgoal"] = function(self, message)
+		["setgoal"] = {Level = 1, Description = "null",
+		Run = function(self, message)
 			if not isAdmin(message.author.id) then return end
 			local args = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if args == nil or args == "" then return end
@@ -175,9 +186,10 @@ return function(ENV)
 				maxGoal = num2
 				message:reply("`Successfully made the following changes:`\n```Minimum goal: ".. minGoal .."\nMaximum goal: ".. maxGoal .."```")
 			end
-		end;
+		end};
 
-		["setrate"] = function(self, message)
+		["setrate"] = {Level = 1, Description = "null",
+		Run = function(self, message)
 			if not isAdmin(message.author.id) then return end
 			local args = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if args == nil or args == "" then return end
@@ -185,9 +197,10 @@ return function(ENV)
 				cvRate = tonumber(args)
 				message:reply("`Successfully made the following changes:`\n```Conversion rate: 1 USD == ".. 1 / cvRate .." RUB```")
 			end
-		end;
+		end};
 
-		["balance"] = function(self, message)
+		["balance"] = {Level = 1, Description = "null",
+		Run = function(self, message)
 			if message.channel.id ~= coalmine then return end
 			local balance = getBalance(message.author.id)
 			if balance > 0 then
@@ -199,21 +212,47 @@ return function(ENV)
 				message:reply("You are IN DEBT BY `".. tostring(math.abs(balance)) .." RUB`. GET BACK TO WORK AND PAY IT OFF!!")
 				message:addReaction("❌")
 			end
-		end;
+		end};
 	};
 
+	local metadata = {}
+	for name, data in pairs(cmd_table) do -- Initialize Name variable
+		data.Name = name
+		if metadata[data.Level] == nil then
+			metadata[data.Level] = {}
+		end
+		table.insert(metadata[data.Level], data)
+	end
+
+	for level, array in pairs(metadata) do
+		local message = ""
+		for _, data in pairs(array) do
+			message = message .."`".. data.Name .."` - ".. data.Description .."\n	"
+		end
+		metadata[level] = message
+	end
+	--json = require('json')
+	--print(json.encode(metadata))
+
 	-- TODO: Initialize the help command here
-	-- FOR each command data, add a Name variable
---[[
-	["cmdName"] = {Level = 1; Description = "Hey there";
-	Run = function()
-		print("Hey there")
+	cmd_table["help"] = {Level = 1, Description = "Displays the available commands that the user can run.",
+	Run = function(self, message)
+	local IsAnAdmin = isAdmin(message.author.id)
+		message:reply("```~~ This bot is in active development. ~~\nIf you have any suggestions, DM them to the owner of this bot: Mattsoft™#0074 (formerly Günsche シ#6704)``` `Prefix = \"".. tostring(prefix) .."\"`")
+		message:reply("**These are all of the public commands:**\n	`help` - Displays the available commands that the user can run.\n	".. metadata[1])
+		if IsAnAdmin and metadata[2] ~= nil then
+			message:reply("----------------------------------------------------------\n**These are all of the admin-only commands:**\n	".. metadata[2])
+		end
+		if message.author.id == owner and metadata[3] ~= nil then
+			message:reply("----------------------------------------------------------\n**These are all of the owner-only commands (The owner of this bot is: <@".. owner ..">):**\n	".. metadata[3])
+		end
 	end}
---]]
+
 
 --[[
 
-["help"] = function(self, message)
+["help"] = {Level = 1, Description = "null",
+Run = function(self, message)
 	local IsAnAdmin = isAdmin(message.author.id)
 	message:reply("```~~ This bot is in active development. ~~\nIf you have any suggestions, DM them to the owner of this bot: Mattsoft™#0074 (formerly Günsche シ#6704)```\n`Prefix = \"".. tostring(prefix) .."\"`")
 	message:reply("These are all of the public commands.\
@@ -236,7 +275,7 @@ These are all of the owner-only commands. (The owner of this bot is: <@".. owner
 	`setmain <channel-id>` - Changes the main broadcast channel.\
 	`setdest <channel-id>` - Changes the main destiantion channel.")
 	end
-end;
+end};
 
 --]]
 	return cmd_table
@@ -244,7 +283,8 @@ end;
 
 --[[
 	-- TODO: In the long run, re-add these commands with database integration (serverdata table)
-	["deport"] = function(self, message) -- Deport targeted user to the Gulag
+	["deport"] = {Level = 1, Description = "null",
+	Run = function(self, message) -- Deport targeted user to the Gulag
 		if not isAdmin(message.author.id) then return end
 		local userid = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 		local user = client:getGuild("000000000000000000"):getMember(userid)
@@ -255,9 +295,10 @@ end;
 		else
 			message:reply("`User does not exist.`")
 		end
-	end;
+	end};
 
-	["release"] = function(self, message) -- Release targeted user from the Gulag
+	["release"] = {Level = 1, Description = "null",
+	Run = function(self, message) -- Release targeted user from the Gulag
 		if not isAdmin(message.author.id) then return end
 		local userid = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 		local user = client:getGuild("000000000000000000"):getMember(userid)
@@ -268,5 +309,5 @@ end;
 		else
 			message:reply("`User does not exist.`")
 		end
-	end;
+	end};
 --]]

@@ -3,46 +3,47 @@
 local discordia = require("discordia")
 local json = require("json")
 local PRC = process.env
--- local SQL = require("./deps/postgres/postgresLuvit.lua")
+-- TODO: Add function IF channel-locked command is ran in an invalid channel, mark it with a reaction
 
 return function(ENV)
 	setfenv(1, ENV) -- Connects the main environment from botmain.lua into this file.
 	local self = {} -- init_table
 
-	self.commands = require("./botcmds.lua")(ENV); -- Loads in the commands into the table so that it can get loaded into the main environment later.
-	self.client = discordia.Client();
-	self.prefix = PRC.PREFIX;
-	self.adminsOnly = PRC.ADMINS_ONLY == "true";
-	self.ownerOverride = PRC.OWNER_OVERRIDE;
+	self.commands = require("./botcmds.lua")(ENV) -- Loads in the commands into the table so that it can get loaded into the main environment later.
+	self.data = require("./botdata.lua")(ENV) -- Loads in the botdata module into the table.
+	self.client = discordia.Client()
+	self.prefix = PRC.PREFIX
+	self.adminsOnly = PRC.ADMINS_ONLY == "true"
+	self.ownerOverride = PRC.OWNER_OVERRIDE
 	local ran, returns = pcall(function() return json.decode(PRC.ADMINS) end)
-	self.admins = (ran == true and returns) or {};
+	self.admins = (ran == true and returns) or {}
 	self.isInvisible = PRC.INVISIBLE
 	self.status = PRC.STATUS
 
-	self.mainChannel = PRC.MAIN_CHANNEL;
-	self.destChannel = PRC.DEST_OVERRIDE;
-	self.coalmine = PRC.COAL_OVERRIDE;
-	self.minGoal = 100; -- PRC.GOAL_MIN
-	self.maxGoal = 300; -- PRC.GOAL_MAX
-	self.minPay = 750; -- PRC.PAY_MIN (Unused temporarily)
-	self.maxPay = 1000; -- PRC.PAY_MAX (Unused temporarily)
-	self.cvRate = (967/62500); -- PRC.CV_CASH // Same as 0.015472, this is in simplest form.
-	self.coalToRub = 8; -- PRC.CV_COAL
+	self.mainChannel = PRC.MAIN_CHANNEL
+	self.destChannel = PRC.DEST_OVERRIDE
+	self.coalmine = PRC.COAL_OVERRIDE
+	self.minGoal = 100 -- PRC.GOAL_MIN
+	self.maxGoal = 300 -- PRC.GOAL_MAX
+	self.minPay = 750 -- PRC.PAY_MIN (Unused temporarily)
+	self.maxPay = 1000 -- PRC.PAY_MAX (Unused temporarily)
+	self.cvRate = (967/62500) -- PRC.CV_CASH // Same as 0.015472, this is in simplest form.
+	self.coalToRub = 8 -- PRC.CV_COAL
 
-	self.coal = 0;
-	self.goal = math.random(self.minGoal, self.maxGoal);
+	self.coal = 0
+	self.goal = math.random(self.minGoal, self.maxGoal)
 	-- Add an option between percentages (amount worked), random (current), and static (based on the goal amount)
-	self.reached = false;
-	self.paid = {};
-	self.workers = {};
-	self.balances = {}; -- will be replaced with database once available // RUB only
-	self.userMinedCoal = {}; -- will be modified by getCoal() and addCoal()
+	self.reached = false
+	self.paid = {}
+	self.workers = {}
+	self.balances = {} -- will be replaced with database once available // RUB only
+	self.userMinedCoal = {} -- will be modified by getCoal() and addCoal()
 
 	self.sleep = function(n) -- In seconds
 		local t0 = os.clock()
 		while os.clock() - t0 <= n do end
 		return true -- For loops
-	end;
+	end
 
 	self.isAdmin = function(userId)
 		for _, Id in pairs(admins) do
@@ -51,7 +52,7 @@ return function(ENV)
 			end
 		end
 		return false
-	end;
+	end
 
 	self.getBalance = function(userId)
 		if type(balances[userId]) == "number" then
@@ -60,7 +61,7 @@ return function(ENV)
 			balances[userId] = 0
 			return balances[userId]
 		end
-	end;
+	end
 
 	self.addBalance = function(userId, amount)
 		if type(balances[userId]) == "number" then
@@ -69,32 +70,29 @@ return function(ENV)
 			balances[userId] = 0
 			balances[userId] = balances[userId] + amount
 		end
-	end;
+	end
 
 	self.getCoal = function(userId)
 		if type(userMinedCoal[userId]) == "number" then
 			return userMinedCoal[userId]
 		else 
-			userMinedCoal[userId] = 0;
+			userMinedCoal[userId] = 0
 			return userMinedCoal[userId]
 		end
-	end;
+	end
 
 	self.addCoal = function(userId, amount)
 		if type(userMinedCoal[userId]) == "number" then
-			userMinedCoal[userId] = userMinedCoal[userId] + amount;
+			userMinedCoal[userId] = userMinedCoal[userId] + amount
 		else 
-			userMinedCoal[userId] = amount;
+			userMinedCoal[userId] = amount
 			return userMinedCoal[userId]
 		end
-	end;
+	end
 
 	self.clearCoal = function(userId, amount)
-		userMinedCoal[userId] = 0;
-	end;
+		userMinedCoal[userId] = 0
+	end
 
 	return self
 end;
-
--- TODO: Move all variables from botmain into here (Might consider renaming this file due to this)
--- TODO: Add function IF channel-locked command is ran in an invalid channel, mark it with a reaction

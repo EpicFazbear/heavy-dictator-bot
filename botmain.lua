@@ -53,7 +53,7 @@ client:on("messageCreate", function(message)
 			if string.sub(cmdstr, 1, string.len(prefix) + string.len(cmd)) == string.lower(prefix .. cmd) then
 				-- TODO: Check command level here, deny access if user doesn't have permission (use botinit/functions.lua)
 				local ran, error = pcall(function()
-					cmd:Run(message)
+					data:Run(message)
 				end)
 				if not ran then
 					message:reply("```~~ AN INTERNAL ERROR HAS OCCURRED ~~\n".. tostring(error) .."```")
