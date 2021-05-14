@@ -1,6 +1,6 @@
 return {
   name = "heavy-dictator-bot",
-  version = "1.2.1",
+  version = "1.2.2",
   description = "A lua-based Discord bot.",
   main = "botmain.lua",
   scripts = {
@@ -8,6 +8,5 @@ return {
   },
   dependencies = {
     "SinisterRectus/discordia"
---	,"JustMaximumPower/luvit-postgres" -- Git submodule
   },
 }
