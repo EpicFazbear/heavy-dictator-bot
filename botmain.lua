@@ -1,33 +1,8 @@
 -- This is our main environment for the Discord bot. --
 
-local discordia = require("discordia")
-local json = require("json")
-local ENV = process.env
-local BOT_TOKEN = ENV.BOT_TOKEN
+-- local discordia = require("discordia")
+-- No longer needed as the Client is initialized in botinit.lua
 
-client = discordia.Client()
-prefix = ENV.PREFIX
-adminsOnly = ENV.ADMINS_ONLY == "true"
-ownerOverride = ENV.OWNER_OVERRIDE
-local ran, returns = pcall(function() return json.decode(ENV.ADMINS) end)
-admins = (ran == true and returns) or {}
-
-mainChannel = ENV.MAIN_CHANNEL
-destChannel = ENV.DEST_OVERRIDE
-coalmine = ENV.COAL_OVERRIDE
-minGoal = 100 -- ENV.GOAL_MIN
-maxGoal = 300 -- ENV.GOAL_MAX
-minPay = 750 -- ENV.PAY_MIN (Unused temporarily)
-maxPay = 1000 -- ENV.PAY_MAX (Unused temporarily)
-cvRate = (967/62500) -- ENV.CV_RATE // Same as 0.015472, this is in simplest form.
-coalToRub = 8
-
-coal = 0
-goal = math.random(minGoal, maxGoal)
--- Add an option between percentages (amount worked), random (current), and static (based on the goal amount)
-reached = false
-paid = {}
-workers = {}
 
 -- Injects our external variables and functions into the main environment.
 local functions = require("./botinit.lua")(getfenv(1))
@@ -41,7 +16,7 @@ client:on("ready", function()
 	table.insert(admins, owner)
 	print("Heavy dictator is now activating..")
 	local message
-	if ENV.INVISIBLE == "true" then
+	if isInvisible == "true" then
 		client:setStatus("invisible") -- Bravo Six, going dark.
 	else
 		message = client:getChannel(mainChannel):send("***Starting bot..***")
@@ -58,11 +33,11 @@ client:on("ready", function()
 		print("Initializing SQL data sync.. (Retrieving data from database)")
 	end
 
-	if ENV.INVISIBLE ~= "true" then
+	if isInvisible ~= "true" then
 		message:setContent(message.content .. "\n***{!} Heavy dictator has been started. {!}***")
 		client:setStatus("online")
-		if string.lower(ENV.STATUS) ~= "none" then
-			client:setGame(ENV.STATUS)
+		if string.lower(status) ~= "none" then
+			client:setGame(status)
 		end
 	end
 	print("Heavy dictator has been started. Gulag Mode enabled.")
@@ -103,6 +78,11 @@ client:on("messageCreate", function(message)
 	end
 end)
 
+
+local PRC = process.env
+local BOT_TOKEN = PRC.BOT_TOKEN
+-- If you don't want to use the Heroku CLI to debug the program, replace the above variable with your bot's token.
+-- WARNING: DOING THIS IS DANGEROUS. Do NOT make any commits/pushes if your bot's token is here. PLEASE USE HEROKU AND .env (Template is: .env.template)
 
 if type(BOT_TOKEN) == "string" then
 	client:run("Bot ".. BOT_TOKEN);

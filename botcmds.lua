@@ -3,7 +3,7 @@
 return function(ENV)
 	setfenv(1, ENV) -- Connects the main environment from botmain.lua into this file.
 
-	local commands = {
+	local cmd_table = {
 		["minecoal"] = function(self, message)
 			if message.channel.id ~= coalmine then return end
 			if not reached then
@@ -239,7 +239,7 @@ These are all of the owner-only commands. (The owner of this bot is: <@".. owner
 end;
 
 --]]
-	return commands
+	return cmd_table
 end;
 
 --[[
