@@ -1,6 +1,6 @@
 return {
   name = "heavy-dictator-bot",
-  version = "1.2.0",
+  version = "1.2.1",
   description = "A lua-based Discord bot.",
   main = "botmain.lua",
   scripts = {
