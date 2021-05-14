@@ -1,71 +1,100 @@
 -- Initialization of functions and variables used by the other .lua files. --
 
--- local SQL = require("./deps/protgres/postgresLuvit.lua")
--- TODO: Move all variables from botmain into here (Might consider renaming this file due to this)
--- TODO: Add function IF channel-locked command is ran in an invalid channel, mark it with a reaction
+local discordia = require("discordia")
+local json = require("json")
+local PRC = process.env
+-- local SQL = require("./deps/postgres/postgresLuvit.lua")
 
 return function(ENV)
 	setfenv(1, ENV) -- Connects the main environment from botmain.lua into this file.
-	return {
-		commands = require("./botcmds.lua")(ENV); -- Loads in the commands into the table so that it can get loaded into the main environment later.
+	local self = {} -- init_table
 
-		sleep = function(n) -- In seconds
-			local t0 = os.clock()
-			while os.clock() - t0 <= n do end
-			return true -- For loops
-		end;
+	self.commands = require("./botcmds.lua")(ENV); -- Loads in the commands into the table so that it can get loaded into the main environment later.
+	self.client = discordia.Client();
+	self.prefix = PRC.PREFIX;
+	self.adminsOnly = PRC.ADMINS_ONLY == "true";
+	self.ownerOverride = PRC.OWNER_OVERRIDE;
+	local ran, returns = pcall(function() return json.decode(PRC.ADMINS) end)
+	self.admins = (ran == true and returns) or {};
+	self.isInvisible = PRC.INVISIBLE
+	self.status = PRC.STATUS
 
-		isAdmin = function(userId)
-			for _, Id in pairs(admins) do
-				if userId == Id then
-					return true
-				end
+	self.mainChannel = PRC.MAIN_CHANNEL;
+	self.destChannel = PRC.DEST_OVERRIDE;
+	self.coalmine = PRC.COAL_OVERRIDE;
+	self.minGoal = 100; -- PRC.GOAL_MIN
+	self.maxGoal = 300; -- PRC.GOAL_MAX
+	self.minPay = 750; -- PRC.PAY_MIN (Unused temporarily)
+	self.maxPay = 1000; -- PRC.PAY_MAX (Unused temporarily)
+	self.cvRate = (967/62500); -- PRC.CV_CASH // Same as 0.015472, this is in simplest form.
+	self.coalToRub = 8; -- PRC.CV_COAL
+
+	self.coal = 0;
+	self.goal = math.random(self.minGoal, self.maxGoal);
+	-- Add an option between percentages (amount worked), random (current), and static (based on the goal amount)
+	self.reached = false;
+	self.paid = {};
+	self.workers = {};
+	self.balances = {}; -- will be replaced with database once available // RUB only
+	self.userMinedCoal = {}; -- will be modified by getCoal() and addCoal()
+
+	self.sleep = function(n) -- In seconds
+		local t0 = os.clock()
+		while os.clock() - t0 <= n do end
+		return true -- For loops
+	end;
+
+	self.isAdmin = function(userId)
+		for _, Id in pairs(admins) do
+			if userId == Id then
+				return true
 			end
-			return false
-		end;
+		end
+		return false
+	end;
 
-		balances = {}; -- will be replaced with database once available // RUB only
-		userMinedCoal = {}; -- will be modified by getCoal() and addCoal()
+	self.getBalance = function(userId)
+		if type(balances[userId]) == "number" then
+			return balances[userId]
+		else
+			balances[userId] = 0
+			return balances[userId]
+		end
+	end;
 
-		getBalance = function(userId)
-			if type(balances[userId]) == "number" then
-				return balances[userId]
-			else
-				balances[userId] = 0
-				return balances[userId]
-			end
-		end;
+	self.addBalance = function(userId, amount)
+		if type(balances[userId]) == "number" then
+			balances[userId] = balances[userId] + amount
+		else
+			balances[userId] = 0
+			balances[userId] = balances[userId] + amount
+		end
+	end;
 
-		addBalance = function(userId, amount)
-			if type(balances[userId]) == "number" then
-				balances[userId] = balances[userId] + amount
-			else
-				balances[userId] = 0
-				balances[userId] = balances[userId] + amount
-			end
-		end;
-
-		getCoal = function(userId)
-			if type(userMinedCoal[userId]) == "number" then
-				return userMinedCoal[userId]
-			else 
-				userMinedCoal[userId] = 0;
-				return userMinedCoal[userId]
-			end
-		end;
-
-		addCoal = function(userId, amount)
-			if type(userMinedCoal[userId]) == "number" then
-				userMinedCoal[userId] = userMinedCoal[userId] + amount;
-			else 
-				userMinedCoal[userId] = amount;
-				return userMinedCoal[userId]
-			end
-		end;
-
-		clearCoal = function(userId, amount)
+	self.getCoal = function(userId)
+		if type(userMinedCoal[userId]) == "number" then
+			return userMinedCoal[userId]
+		else 
 			userMinedCoal[userId] = 0;
-		end;
-    
-	};
+			return userMinedCoal[userId]
+		end
+	end;
+
+	self.addCoal = function(userId, amount)
+		if type(userMinedCoal[userId]) == "number" then
+			userMinedCoal[userId] = userMinedCoal[userId] + amount;
+		else 
+			userMinedCoal[userId] = amount;
+			return userMinedCoal[userId]
+		end
+	end;
+
+	self.clearCoal = function(userId, amount)
+		userMinedCoal[userId] = 0;
+	end;
+
+	return self
 end;
+
+-- TODO: Move all variables from botmain into here (Might consider renaming this file due to this)
+-- TODO: Add function IF channel-locked command is ran in an invalid channel, mark it with a reaction
