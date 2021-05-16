@@ -18,10 +18,11 @@ return function(ENV)
 	self.admins = (ran == true and returns) or {}
 	self.isInvisible = PRC.INVISIBLE
 	self.status = PRC.STATUS
-
 	self.mainChannel = PRC.MAIN_CHANNEL
 	self.destChannel = PRC.DEST_CHANNEL
-	self.coalmine = self.destChannel -- This is temporary until serverdata is fully developed
+
+	-- Below are temporary until serverdata is fully developed. --
+	self.coalmine = self.destChannel
 	self.minGoal = 100 -- PRC.GOAL_MIN
 	self.maxGoal = 300 -- PRC.GOAL_MAX
 	self.minPay = 750 -- PRC.PAY_MIN (Unused temporarily)
@@ -31,17 +32,32 @@ return function(ENV)
 
 	self.coal = 0
 	self.goal = math.random(self.minGoal, self.maxGoal)
-	-- Add an option between percentages (amount worked), random (current), and static (based on the goal amount)
+	self.active = false -- Whether or not a coalmine is currently active (serverdata)
+	self.payType = 1 -- Add an option between [1] random (current), [2] percentages (amount worked), and [3] static (based on the goal amount)
 	self.reached = false
+	-- Above are temporary until serverdata is fully developed. --
 	self.paid = {}
 	self.workers = {}
-	self.balances = {} -- will be replaced with database once available // RUB only
-	self.userMinedCoal = {} -- will be modified by getCoal() and addCoal()
+	self.balances = {} -- Will be replaced with userdata once available // RUB only
+	self.userMinedCoal = {} -- Will be modified by getCoal() and addCoal()
 
 	self.sleep = function(n) -- In seconds
 		local t0 = os.clock()
 		while os.clock() - t0 <= n do end
 		return true -- For loops
+	end
+
+	self.waitForNextMessage = function(message)
+		local author = message.author.id
+		local channel = message.channel.id
+		local returned
+		repeat
+			local ran, newmsg = client:waitFor("messageCreate")
+			if newmsg.author.id == author and newmsg.channel.id == channel then
+				returned = newmsg
+			end
+		until returned ~= nil
+		return returned
 	end
 
 	self.isAdmin = function(userId)

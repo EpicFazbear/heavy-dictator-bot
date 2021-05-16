@@ -10,8 +10,6 @@ local previous = getfenv(1)
 for i,v in pairs(functions) do previous[i] = v end
 setfenv(1, previous)
 
---local dat = data:Save("123",{},"userdata")
-
 
 client:on("ready", function()
 	owner = client:getUser(ownerOverride) or client.owner
@@ -33,7 +31,7 @@ client:on("ready", function()
 			message:setContent(message.content .. "\n***Initializing database sync.. (Retrieving data from database)***")
 		end
 		print("Initializing database sync.. (Retrieving data from database)")
-		data:Sync()
+		data:Sync() -- Build our data cache by calling the sync function.
 	end
 
 	if isInvisible ~= "true" then

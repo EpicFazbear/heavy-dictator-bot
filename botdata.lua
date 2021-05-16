@@ -13,15 +13,23 @@ return function(ENV)
 	setfenv(1, ENV) -- Connects the main environment from botmain.lua into this file.
 	local data_table = {}
 
+	data_table.order = {
+		["userdata"] = {"type", "id", "name", "balance", "equipped", "inventory"};
+		["serverdata"] = {"type", "id", "name", "coalmine", "paytype", "mingoal", "maxgoal"};
+	}
 	data_table.userdata = { -- Template
+		["type"] = "userdata",
 		["id"] = "",
 		["name"] = "",
 		["balance"] = 0,
-		["equip"] = "",
+		["equipped"] = "",
 		["inventory"] = {}
 	}
 
 	data_table.serverdata = { -- Template
+		["type"] = "serverdata",
+		["id"] = "",
+		["name"] = "",
 		["coalmine"] = "",
 		["paytype"] = "",
 		["mingoal"] = 100,
@@ -30,15 +38,13 @@ return function(ENV)
 
 	function data_table:Init()
 		data_storage = client:getChannel(data_storage)
-		self.Active = (data_storage ~= nil) -- Whether or not we can save permanent data.
+		self.Active = (data_storage ~= nil) -- Whether or not we can save persistent data.
 		self.Synced = false -- Whether or not our Cache is ready yet.
 		self.Cache = {} -- Our local table of data for the bot to quickly reference from.
-		self.Metadata = {} -- A table of user/server IDs linked to their corresponding message IDs in the permanent data channel.
+		self.Metadata = {} -- A table of user/server IDs linked to their corresponding message IDs in the persistent data channel.
 
-		local messages = data_storage:getMessages(100)
-		for i,v in pairs(messages) do -- Testing
-			print(i, "==", v.content)
-		end
+		-- Testing --
+		local dat = self:Save("843352680051245066",{balance=9001},"userdata")
 	end
 
 	function data_table:Sync()
@@ -49,36 +55,73 @@ return function(ENV)
 			for _, pin in pairs(pin_pool) do
 				local msg_pool = data_storage:getMessagesAfter(pin.id, 100)
 				for _, msg in pairs(msg_pool) do
-					if message.author.id ~= client.user.id then
-						-- TODO: decode, then do:
-						-- self.Cache[decoded.id] = decoded
-						-- self.Metadata[decoded.id] = message.id
+					if msg.author.id == client.user.id then
+						msg = msg.content:gsub("```json\n", ""):gsub("```","")
+						local decoded = json.decode(msg)
+						if type(decoded) == "table" then
+							print("Loading data from ".. tostring(decoded.id) ..".")
+							decoded = self:Serialize(decoded, decoded.type)
+							self.Cache[decoded.id] = decoded
+							self.Metadata[decoded.id] = msg.id
+						end
 					end
 				end
 			end
 		end
 	end
 
-	function data_table:Serialize(data, datatype) -- If new values are ever added, this serialize function will add them to currently existing datatables
+	function data_table:Serialize(data, datatype) -- If new values are ever added, this serialize function will add them to our currently existing datatables.
 		assert(type(data) == "table", "Inputted data is either invalid or malformed!")
 		local template = self[datatype] or self.userdata
-		for tag, value in pairs(data) do
-			template[tag] = value
+		for key, value in pairs(data) do
+			template[key] = value
 		end
 		return template
 	end
 
-	function data_table:Save(message, data, datatype)
-		assert(type(message) ~= "nil", "No message data provided!")
+	function data_table:Encode(data, datatype) -- Decided to make my own JSON encode function because the order of keys isn't persistent in the native function.
 		assert(type(data) == "table", "Inputted data is either invalid or malformed!")
-		data = self:Serialize(data, datatype)
-		local encoded = json.encode(data):gsub(",", ",\n	"):gsub("{","{\n	"):gsub("}","\n}")
-		-- TODO: specify format as JSON when sending message
+		local ordered = self.order[datatype] or self.order["userdata"]
+		local encoded = "{\n"
+		for _, key in pairs(ordered) do
+			if data[key] ~= nil then
+				local value = data[key]
+				if type(value) == "string" then
+					value = "\"".. value .."\""
+				elseif type(value) == "number" then
+					value = value
+				elseif type(value) == "table" then
+					value = json.encode(value) -- Use native function since order doesn't matter
+				end
+				encoded = encoded .."	\"".. tostring(key) .."\": ".. tostring(value) .. ",\n"
+			end
+		end
+		return encoded .."}"
 	end
 
-	function data_table:Load(keyId)
-		assert(type(keyId) ~= "nil", "No message data provided!")
-		-- TODO: Get data from self.Cache[keyId]
+	function data_table:Save(id, data, datatype)
+		assert(type(id) == "string", "An invalid ID was provided!")
+		assert(type(data) == "table", "Inputted data is either invalid or malformed!")
+		if datatype == nil then datatype = data.type end
+		data = self:Serialize(data, datatype)
+		data.id = id
+		local encoded = self:Encode(data, datatype)--:gsub(",", ",\n	"):gsub("{","{\n	"):gsub("}","\n}")
+		local message = data_storage:getMessage(id)
+		if message ~= nil and message.author.id == client.user.id then
+			message:setContent("```json\n".. encoded .."\n```") -- Since data already exists for this ID, simply overwrite it
+		else
+			data_storage:send{content = encoded, code = "json"} -- Create new data for our unique ID
+			-- TODO: Add detection for when we've reached 100 messages since the last PIN
+		end
+		return encoded
+	end
+
+	function data_table:Modify(id, key, value)
+		assert(type(id) == "string", "An invalid ID was provided!")
+		assert(type(key) == "string", "No data KEY was provided!")
+		--assert(type(value) == "string", "No data VALUE was provided!")
+		self.Cache[id][key] = value
+		self:Save(id, self.Cache[id], self.Cache[id].type)
 	end
 
 	return data_table
@@ -92,7 +135,7 @@ loop through the entire database, in 100 intervals
 at every consecutive loop, get the earliest message id, and get 100 messages from before that message
 ---------
 create two caches: actual data, and message id metadata
-when data is update, retrieve message id from metadata
+when data is updated, retrieve message id from metadata
 goto message in database via message id
 from there, convert raw data into json and edit the message's content
 ---------
