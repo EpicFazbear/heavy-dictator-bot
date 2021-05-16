@@ -3,7 +3,6 @@
 local discordia = require("discordia")
 local json = require("json")
 local PRC = process.env
--- TODO: Add function IF channel-locked command is ran in an invalid channel, mark it with a reaction
 
 return function(ENV)
 	setfenv(1, ENV) -- Connects the main environment from botmain.lua into this file.
@@ -21,8 +20,8 @@ return function(ENV)
 	self.status = PRC.STATUS
 
 	self.mainChannel = PRC.MAIN_CHANNEL
-	self.destChannel = PRC.DEST_OVERRIDE
-	self.coalmine = PRC.COAL_OVERRIDE
+	self.destChannel = PRC.DEST_CHANNEL
+	self.coalmine = self.destChannel -- This is temporary until serverdata is fully developed
 	self.minGoal = 100 -- PRC.GOAL_MIN
 	self.maxGoal = 300 -- PRC.GOAL_MAX
 	self.minPay = 750 -- PRC.PAY_MIN (Unused temporarily)
@@ -52,6 +51,31 @@ return function(ENV)
 			end
 		end
 		return false
+	end
+
+	self.isServerAdmin = function(userId, serverId)
+		-- TODO: add a function here later on
+	end
+
+	self.getLevel = function(userId)
+		local level = 1
+		if self.isAdmin then
+			level = 2
+		end
+		if userId == owner then
+			level = 3
+		end
+		return level
+	end
+
+	self.checkChannel = function(message, channel)
+		if message.channel.id ~= channel then
+			message:reply("Invalid channel! Go-to: <#".. tostring(channel) ..">.")
+			message:addReaction("❌")
+			return false
+		else
+			return true
+		end
 	end
 
 	self.getBalance = function(userId)
