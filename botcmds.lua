@@ -26,7 +26,6 @@ return function(ENV)
 				elseif mined == 2 then
 					message:addReaction("🛠")
 				elseif mined == 3 then
-					message:addReaction("⛏")
 					message:addReaction("⚒")
 				end
 			--]]
@@ -208,6 +207,89 @@ return function(ENV)
 					destChannel = message.channel.id
 					message:reply("`Successfully changed the 'destination' channel!` - <#".. destChannel ..">")
 				end
+			end
+		end};
+
+		["dataedit"] = {Level = 3, Description = "An interactive command for editing datatables", -- TODO: Cleanup this code lolz
+		Run = function(self, message)
+			local content
+			local main = message:reply("```Please specify the function you are trying to access:\nModify value (mod)\nClear value (clr)\nDelete entire data table (del)```")
+			local newmsg = waitForNextMessage(message)
+			content = newmsg.content:lower()
+			newmsg:delete()
+			if content == "add" or content == "clr" or content == "mod" or content == "del" then
+				option = content
+			else
+				main:setContent("```Invalid option. Cancelling the procedure..```")
+				return
+			end
+			main:setContent("```Specify the ID (server or user) of the datatable you wish to modify.```")
+			newmsg = waitForNextMessage(message)
+			content = newmsg.content:lower()
+			newmsg:delete()
+			if content == "type" or content == "id" then
+				main:setContent("```Sorry! This key value is protected in order to keep the integrity of the stored data. Cancelling the procedure..```")
+			end
+			local datatable = data.Cache[content]
+			if datatable ~= nil then
+				if option == "del" then
+					main:setContent("```ARE YOU SURE YOU WISH TO DELETE ALL THE DATA FOR ".. tostring(datatable.id) .." (".. tostring(datatable.name) ..")?```")
+					newmsg = waitForNextMessage(message)
+					content = newmsg.content:lower()
+					newmsg:delete()
+					if content == "yes" then
+						data.Cache[content] = nil
+						data:Delete(datatable.id)
+						main:setContent("```Successfully deleted the data of ".. tostring(datatable.id) .." (".. tostring(datatable.name) ..").```")
+					else
+						main:setContent("```Cancelled the procedure.```")
+					end
+				else
+					main:setContent("```Specify the name of the data key you wish to modify.```")
+					newmsg = waitForNextMessage(message)
+					content = newmsg.content:lower()
+					newmsg:delete()
+					local keyname, found = content, datatable[content]
+					if found ~= nil then
+						if option == "clr" then
+							main:setContent("```ARE YOU SURE YOU WISH TO CLEAR THE KEY '".. tostring(keyname) .."' FOR THE DATA OF ".. tostring(datatable.id) .." (".. tostring(datatable.name) ..")?```")
+							newmsg = waitForNextMessage(message)
+							content = newmsg.content:lower()
+							newmsg:delete()
+							if content == "yes" then
+								data:Modify(datatable.id, keyname, nil)
+								main:setContent("```Successfully cleared the '".. tostring(keyname) .."' key from the data of ".. tostring(datatable.id) .." (".. tostring(datatable.name) ..").```")
+							else
+								main:setContent("```Cancelled the procedure.```")
+							end
+						elseif option == "mod" then
+							main:setContent("```Specify the value that you wish to set the key '".. keyname .."' to.```")
+							newmsg = waitForNextMessage(message)
+							local newvalue = newmsg.content
+							local json = require("json")
+							if tonumber(newvalue) ~= nil then
+								newvalue = tonumber(newvalue)
+							elseif json.decode(newvalue) ~= nil then
+								newvalue = json.decode(newvalue)
+							end
+							newmsg:delete()
+							main:setContent("```ARE YOU SURE YOU WISH TO OVERWRITE THE KEY '".. tostring(keyname) .."' TO \"".. tostring(newvalue) .."\" FOR THE DATA OF ".. tostring(datatable.id) .." (".. tostring(datatable.name) ..")?```")
+							newmsg = waitForNextMessage(message)
+							content = newmsg.content:lower()
+							newmsg:delete()
+							if content == "yes" then
+								data:Modify(datatable.id, keyname, newvalue)
+								main:setContent("```Successfully overwritten the key '".. tostring(keyname) .."' key to \"".. tostring(newvalue) .."\" for the data of ".. tostring(datatable.id) .." (".. tostring(datatable.name) ..").```")
+							else
+								main:setContent("```Cancelled the procedure.```")
+							end
+						end
+					else
+						main:setContent("```Invalid key name. Cancelling the procedure..```")
+					end
+				end
+			else
+				main:setContent("```The datatable of that ID does not exist. Cancelling the procedure..```")
 			end
 		end};
 	};
