@@ -10,10 +10,13 @@ local previous = getfenv(1)
 for i,v in pairs(functions) do previous[i] = v end
 setfenv(1, previous)
 
+--local dat = data:Save("123",{},"userdata")
+
 
 client:on("ready", function()
-	owner = client:getUser(ownerOverride) or client.owner.id
-	table.insert(admins, owner)
+	owner = client:getUser(ownerOverride) or client.owner
+	owner = owner.id
+	table.insert(admins, owner.id)
 	print("Heavy dictator is now activating..")
 	local message
 	if isInvisible == "true" then
@@ -23,14 +26,14 @@ client:on("ready", function()
 		client:setStatus("idle")
 		client:setGame("Initializing..")
 	end
-	
-	-- TODO: in here, do loading sequence with SQL stuffs
 
-	if sql_thingy then
+	data:Init() -- Initalize our database module.
+	if data.Active then
 		if message then
-			message:setContent(message.content .. "\n***Initializing SQL data sync.. (Retrieving data from database)***")
+			message:setContent(message.content .. "\n***Initializing database sync.. (Retrieving data from database)***")
 		end
-		print("Initializing SQL data sync.. (Retrieving data from database)")
+		print("Initializing database sync.. (Retrieving data from database)")
+		data:Sync()
 	end
 
 	if isInvisible ~= "true" then
@@ -45,18 +48,22 @@ end)
 
 
 client:on("messageCreate", function(message)
-	if message.author == client.user or message.author.bot == true or message.author.discriminator == 0000 then return end
+	if message.author.id == client.user.id or message.author.bot == true or message.author.discriminator == 0000 then return end
 
 	local cmdstr = string.lower(message.content)
 	if string.sub(cmdstr, 1, 1) == prefix then
+		local level = getLevel(message.author.id)
 		for cmd, data in pairs(commands) do -- Runs through our list of commands and connects them to our messageCreate connection.
 			if string.sub(cmdstr, 1, string.len(prefix) + string.len(cmd)) == string.lower(prefix .. cmd) then
-				-- TODO: Check command level here, deny access if user doesn't have permission (use botinit/functions.lua)
-				local ran, error = pcall(function()
-					data:Run(message)
-				end)
-				if not ran then
-					message:reply("```~~ AN INTERNAL ERROR HAS OCCURRED ~~\n".. tostring(error) .."```")
+				if data.Level <= level then
+					local ran, error = pcall(function()
+						data:Run(message)
+					end)
+					if not ran then
+						message:reply("```~~ AN INTERNAL ERROR HAS OCCURRED ~~\n".. tostring(error) .."```")
+					end
+				else
+					message:reply("```~~ You do not have access to this command! ~~```")
 				end
 			break end
 		end
@@ -70,9 +77,9 @@ client:on("messageCreate", function(message)
 	end
 	if message.channel.id == mainChannel and destChannel and allowed then
 		local channel = client:getChannel(destChannel)
-		if message.attachment ~= nil and channel then
+		if message.attachment ~= nil and channel ~= nil then
 			channel:send{content = message.content, embed = {image = {url = message.attachment.url}}}
-		else
+		elseif channel ~= nil then
 			channel:send(message.content)
 		end
 	end
