@@ -1,6 +1,9 @@
-# Regular things that should be excluded
+# Exclude our .env file because it contains personal and possibly sensitive data
 .env
+# Exlude the deps folder as that should be generated when compiling on Heroku
 deps/
+# Exclude any Visual Studio Code settings that may have been saved
+.vscode/
 
 # Ignore logs created by Discordia
 *.log
@@ -9,3 +12,5 @@ deps/
 *.dll
 # Ignore optional executables (Notably ffmpeg.exe for voice)
 *.exe
+# Ignore any batch files used for debugging
+*.bat
