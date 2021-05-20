@@ -17,12 +17,15 @@ client:on("ready", function()
 	table.insert(admins, owner.id)
 	print("Heavy dictator is now activating..")
 	local message
-	if isInvisible == "true" then
-		client:setStatus("invisible") -- Bravo Six, going dark.
-	else
-		message = client:getChannel(mainChannel):send("***Starting bot..***")
+	if isInvisible ~= "true" then
+		if mainChannel ~= nil then
+			message = client:getChannel(mainChannel):send("***Starting bot..***")
+		end
 		client:setStatus("idle")
 		client:setGame("Initializing..")
+	else
+		client:setStatus("invisible") -- Bravo Six, going dark.
+		print("Started in Invisible mode.")
 	end
 
 	data:Init() -- Initalize our database module.
@@ -30,7 +33,6 @@ client:on("ready", function()
 		if message then
 			message:setContent(message.content .. "\n***Initializing database sync.. (Retrieving data from database)***")
 		end
-		print("Initializing database sync.. (Retrieving data from database)")
 		data:Sync() -- Build our data cache by calling the sync function.
 	end
 

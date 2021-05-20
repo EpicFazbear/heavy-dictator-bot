@@ -18,7 +18,7 @@ return function(ENV)
 	self.admins = (ran == true and returns) or {}
 	self.isInvisible = PRC.INVISIBLE
 	self.status = PRC.STATUS
-	self.mainChannel = PRC.MAIN_CHANNEL
+	self.mainChannel = PRC.MAIN_CHANNEL -- TODO: IF this == nil, then just post messages to the creator's DMs.
 	self.destChannel = PRC.DEST_CHANNEL
 
 	-- Below are temporary until serverdata is fully developed. --

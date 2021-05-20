@@ -176,43 +176,54 @@ return function(ENV)
 
 		["setmain"] = {Level = 3, Description = "Changes the main broadcast channel.", Args = "<channel-id>",
 		Run = function(self, message)
-			if message.author.id == owner then
-				local target = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
-				if target ~= nil and target ~= "" then
-					if client:getChannel(target) ~= nil then
-						mainChannel = target
-						message:reply("`Successfully changed the 'broadcast' channel!` - <#".. mainChannel ..">")
-					else
-						message:reply("`Could not find the channel of the provided ID!`")
-					end
-				else
-					mainChannel = message.channel.id
+			if message.author.id ~= owner then return end
+			local target = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
+			if target ~= nil and target ~= "" then
+				if client:getChannel(target) ~= nil then
+					mainChannel = target
 					message:reply("`Successfully changed the 'broadcast' channel!` - <#".. mainChannel ..">")
+				else
+					message:reply("`Could not find the channel of the provided ID!`")
 				end
+			else
+				mainChannel = message.channel.id
+				message:reply("`Successfully changed the 'broadcast' channel!` - <#".. mainChannel ..">")
 			end
 		end};
 
 		["setdest"] = {Level = 3, Description = "Changes the main destiantion channel.", Args = "<channel-id>",
 		Run = function(self, message)
-			if message.author.id == owner then
-				local target = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
-				if target ~= nil and target ~= "" then
-					if client:getChannel(target) ~= nil then
-						destChannel = target
-						message:reply("`Successfully changed the 'destination' channel!` - <#".. destChannel ..">")
-					else
-						message:reply("`Could not find the channel of the provided ID!`")
-					end
-				else
-					destChannel = message.channel.id
+			if message.author.id ~= owner then return end
+			local target = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
+			if target ~= nil and target ~= "" then
+				if client:getChannel(target) ~= nil then
+					destChannel = target
 					message:reply("`Successfully changed the 'destination' channel!` - <#".. destChannel ..">")
+				else
+					message:reply("`Could not find the channel of the provided ID!`")
 				end
+			else
+				destChannel = message.channel.id
+				message:reply("`Successfully changed the 'destination' channel!` - <#".. destChannel ..">")
 			end
+		end};
+
+		["debug"] = {Level = 3, Description = "A debug command.",
+		Run = function(self, message)
+			if message.author.id ~= owner then return end
+			-- Testing --
+			local main = message:reply("```Set the balance you wish to recieve.```")
+			local newmsg = waitForNextMessage(message)
+			local content = tonumber(newmsg.content)
+			newmsg:delete()
+			local datareturn = data:Save(message.author.id, {balance = content}, "userdata")
+			main:setContent("```Successfully set your balance to: ".. tostring(content) .."```")
 		end};
 
 		["dataedit"] = {Level = 3, Description = "An interactive command for editing datatables", -- TODO: Cleanup this code lolz
 		Run = function(self, message)
-			local content
+			if message.author.id ~= owner then return end
+			local content, option
 			local main = message:reply("```Please specify the function you are trying to access:\nModify value (mod)\nClear value (clr)\nDelete entire data table (del)```")
 			local newmsg = waitForNextMessage(message)
 			content = newmsg.content:lower()
