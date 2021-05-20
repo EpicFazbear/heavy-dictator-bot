@@ -20,6 +20,8 @@ client:on("ready", function()
 	if isInvisible ~= "true" then
 		if mainChannel ~= nil then
 			message = client:getChannel(mainChannel):send("***Starting bot..***")
+		else
+			-- Post startup message to the owner's DMs.
 		end
 		client:setStatus("idle")
 		client:setGame("Initializing..")
