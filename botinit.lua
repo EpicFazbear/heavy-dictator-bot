@@ -3,6 +3,7 @@
 local discordia = require("discordia")
 local json = require("json")
 local PRC = process.env
+local getPRC = require("./botvars.lua") -- Loads our .ENV function in case the bot isn't ran through Heroku.
 
 return function(ENV)
 	setfenv(1, ENV) -- Connects the main environment from botmain.lua into this file.
@@ -11,15 +12,15 @@ return function(ENV)
 	self.commands = require("./botcmds.lua")(ENV) -- Loads in the commands into the table so that it can get loaded into the main environment later.
 	self.data = require("./botdata.lua")(ENV) -- Loads in the botdata module into the table.
 	self.client = discordia.Client()
-	self.prefix = PRC.PREFIX
-	self.adminsOnly = PRC.ADMINS_ONLY == "true"
-	self.ownerOverride = PRC.OWNER_OVERRIDE
-	local ran, returns = pcall(function() return json.decode(PRC.ADMINS) end)
+	self.prefix = PRC.PREFIX or getPRC("PREFIX") or ";"
+	self.adminsOnly = (PRC.ADMINS_ONLY or getPRC("ADMINS_ONLY")) == "true"
+	self.ownerOverride = PRC.OWNER_OVERRIDE or getPRC("OWNER_OVERRIDE")
+	local ran, returns = pcall(function() return json.decode(PRC.ADMINS or getPRC("ADMINS")) end)
 	self.admins = (ran == true and returns) or {}
-	self.isInvisible = PRC.INVISIBLE
-	self.status = PRC.STATUS
-	self.mainChannel = PRC.MAIN_CHANNEL
-	self.destChannel = PRC.DEST_CHANNEL
+	self.isInvisible = PRC.INVISIBLE or getPRC("INVISIBLE")
+	self.status = PRC.STATUS or getPRC("STATUS")
+	self.mainChannel = PRC.MAIN_CHANNEL or getPRC("MAIN_CHANNEL")
+	self.destChannel = PRC.DEST_CHANNEL or getPRC("DEST_CHANNEL")
 
 	-- Below are temporary until serverdata is fully developed. --
 	self.coalmine = self.destChannel
@@ -130,7 +131,7 @@ return function(ENV)
 		end
 	end
 
-	self.clearCoal = function(userId, amount)
+	self.clearCoal = function(userId)
 		userMinedCoal[userId] = 0
 	end
 

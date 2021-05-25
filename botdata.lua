@@ -1,8 +1,7 @@
 -- Initializes all database-related functions and variables. --
 
 local json = require("json")
-local PRC = process.env
-local data_storage = PRC.DATA_CHANNEL
+local data_storage = process.env.DATA_CHANNEL or require("./botvars.lua")("DATA_CHANNEL")
 
 local function mark_pin(channel)
 	channel:send("-------------------- (100 Messages)"):pin()
@@ -13,55 +12,55 @@ return function(ENV)
 	setfenv(1, ENV) -- Connects the main environment from botmain.lua into this file.
 	local data_table = {}
 
-	data_table.order = {
-		["userdata"] = {"type", "id", "name", "balance", "equipped", "inventory"};
-		["serverdata"] = {"type", "id", "name", "coalmine", "paytype", "mingoal", "maxgoal"};
-	}
-	data_table.userdata = { -- Template
-		["type"] = "userdata",
-		["id"] = "",
-		["name"] = "",
-		["balance"] = 0,
-		["equipped"] = "",
-		["inventory"] = {}
-	}
-
-	data_table.serverdata = { -- Template
-		["type"] = "serverdata",
-		["id"] = "",
-		["name"] = "",
-		["coalmine"] = "",
-		["paytype"] = "",
-		["mingoal"] = 100,
-		["maxgoal"] = 300
-	}
 
 	function data_table:Init()
-		data_storage = client:getChannel(data_storage)
+		data_storage = client:getChannel(data_storage) -- Converts our data_storage channel ID into a GuildTextChannel object.
 		self.Active = (data_storage ~= nil) -- Whether or not we can save persistent data.
 		self.Synced = false -- Whether or not our Cache is ready yet.
 		self.Cache = {} -- Our local table of data for the bot to quickly reference from.
 		self.Metadata = {} -- A table of user/server IDs linked to their corresponding message IDs in the persistent data channel.
-		self.Pins = nil -- A table of pins (initialized later) in our data_storage channel (our data is processed in 100-msg chunks).
+
+		self.order = {
+			["userdata"] = {"type", "id", "name", "balance", "coal_mined", "equipped", "inventory"};
+			["serverdata"] = {"type", "id", "name", "coalmine", "paytype", "mingoal", "maxgoal"};
+		}
+		self.userdata = { -- Template
+			["type"] = "userdata",
+			["id"] = "",
+			["name"] = "",
+			["balance"] = 0,
+			["coal_mined"] = 0,
+			["equipped"] = "",
+			["inventory"] = {}
+		}
+		self.serverdata = { -- Template
+			["type"] = "serverdata",
+			["id"] = "",
+			["name"] = "",
+			["coalmine"] = "",
+			["paytype"] = "",
+			["mingoal"] = 100,
+			["maxgoal"] = 300
+		}
 	end
+
 
 	function data_table:Sync()
 		if not self.Active then return end
+		if self.Synced then return end
 		print("Initializing database sync.. (Retrieving data from the database)")
 		local pin_pool = data_storage:getPinnedMessages()
 		if #pin_pool == 0 then
 			mark_pin(data_storage)
 		else
-			self.Pins = pin_pool
 			for _, pin in pairs(pin_pool) do
 				local msg_pool = data_storage:getMessagesAfter(pin.id, 100)
 				for _, msg in pairs(msg_pool) do
 					if msg.author.id == client.user.id then
-						msg = msg.content:gsub("```json\n", ""):gsub("```","")
-						local decoded = json.decode(msg)
+						local decoded = json.decode(msg.content:gsub("```json\n", ""):gsub("```",""))
 						if type(decoded) == "table" then
-							print("Loading data from ".. tostring(decoded.id) ..".")
-							decoded = self:Serialize(decoded, decoded.type)
+							print("Loading data of ".. tostring(decoded.id) ..".")
+							decoded = self:Serialize(decoded, self[decoded.type])
 							self.Cache[decoded.id] = decoded
 							self.Metadata[decoded.id] = msg.id
 						end
@@ -69,16 +68,19 @@ return function(ENV)
 				end
 			end
 		end
+		self.Synced = true
 	end
 
-	function data_table:Serialize(data, datatype) -- If new values are ever added, this serialize function will add them to our currently existing datatables.
+
+	function data_table:Serialize(main, base) -- If new values are ever added, this serialize function will add them to our currently existing datatables.
 		assert(type(data) == "table", "Inputted data is either invalid or malformed!")
-		local template = self[datatype] or self.userdata
-		for key, value in pairs(data) do
+		local template = base
+		for key, value in pairs(main) do
 			template[key] = value
 		end
 		return template
 	end
+
 
 	function data_table:Encode(data, datatype) -- Decided to make my own JSON encode function because the order of keys isn't persistent in the native function.
 		assert(type(data) == "table", "Inputted data is either invalid or malformed!")
@@ -92,7 +94,7 @@ return function(ENV)
 				elseif type(value) == "number" then
 					value = value
 				elseif type(value) == "table" then
-					value = json.encode(value) -- Use native function since order doesn't matter
+					value = json.encode(value) -- Use native function since order of regular arrays doesn't matter
 				end
 				encoded = encoded .."	\"".. tostring(key) .."\": ".. tostring(value) .. ",\n"
 			end
@@ -100,11 +102,17 @@ return function(ENV)
 		return encoded .."}"
 	end
 
+
 	function data_table:Save(id, data, datatype)
+		if not self.Synced then return print("[WARN] Data syncing is currently not avaliable! Please make sure your DATA_CHANNEL variable is correctly set-up!") end
 		assert(type(id) == "string", "An invalid ID was provided!")
 		assert(type(data) == "table", "Inputted data is either invalid or malformed!")
 		if datatype == nil then datatype = data.type end
-		data = self:Serialize(data, datatype)
+		local old = self.Cache[id]
+		if old ~= nil then
+			data = self:Serialize(data, old)
+		end
+		data = self:Serialize(data, self[datatype])
 		data.id = id
 		self.Cache[id] = data
 		local encoded = self:Encode(data, datatype)--:gsub(",", ",\n	"):gsub("{","{\n	"):gsub("}","\n}")
@@ -113,41 +121,54 @@ return function(ENV)
 			message = data_storage:getMessage(message)
 			if message ~= nil and message.author.id == client.user.id then
 				message:setContent("```json\n".. encoded .."\n```") -- Since data already exists for this ID, simply overwrite it
+			else
+				print("[WARN] Attempt to locate data ID: ".. tostring(id) .." - Metadata ID is invalid or does not exist!")
 			end
 		else
 			message = data_storage:send{content = encoded, code = "json"} -- Create new data for our unique ID
-			self.Metadata[id] = message.id
-			-- TODO: Add detection for when we've reached 100 messages since the last PIN
-			print("Checking if we have reached the data chunk limit..")
-			local debug_time = os.time()
-			local check = false
-			local msg_pool = data_storage:getMessages(100)
-			for _, msg  in pairs(msg_pool) do
-				for _, pin  in pairs(msg_pool) do
-					if msg.id == pin.id then
-						check = true
+			if message ~= nil then
+				self.Metadata[id] = message.id
+				print("Checking if we have reached the data chunk limit..") -- Check if we've reached our data chunk limit
+				local debug_time = os.time()
+				local check = false
+				local msg_pool = data_storage:getMessages(100)
+				for _, msg in pairs(msg_pool) do
+					for _, pin in pairs(msg_pool) do
+						if msg.id == pin.id then
+							check = true
+						end
 					end
 				end
-			end
-			if check == true then
-				print("Chunk limit reached. Creating new chunk separator..", os.time() - debug_time)
-				mark_pin(data_storage)
+				if check == true then
+					print("Chunk limit has not been reached yet..", os.time() - debug_time)
+				else
+					print("Chunk limit reached. Creating new chunk separator..", os.time() - debug_time)
+					mark_pin(data_storage)
+				end
 			else
-				print("Chunk limit not reached yet..", tick() - debug_time)
+				print("[WARN] Attempt to create new data message: ".. tostring(id) .." - Message to the `data_storage` channel failed to send!")
 			end
 		end
 		return self.Cache[id]
 	end
 
+
 	function data_table:Modify(id, key, value)
+		if not self.Synced then return print("[WARN] Data syncing is currently not avaliable! Please make sure your DATA_CHANNEL variable is correctly set-up!") end
 		assert(type(id) == "string", "An invalid ID was provided!")
 		assert(type(key) == "string", "No data KEY was provided!")
 		--assert(type(value) == "string", "No data VALUE was provided!")
-		self.Cache[id][key] = value
-		self:Save(id, self.Cache[id], self.Cache[id].type)
+		if self.Cache[id] ~= nil then
+			self.Cache[id][key] = value
+			return self:Save(id, self.Cache[id], self.Cache[id].type)
+		else
+			print("[WARN] Attempt to modify data ID: ".. tostring(id) .." - ID does not exist in Cache!")
+		end
 	end
 
+
 	function data_table:Delete(id)
+		if not self.Active then return print("[WARN] Data syncing is currently not avaliable! Please make sure your DATA_CHANNEL variable is correctly set-up!") end
 		assert(type(id) == "string", "An invalid ID was provided!")
 		local message = self.Metadata[id]
 		if message ~= nil then
@@ -155,9 +176,13 @@ return function(ENV)
 			if message ~= nil then
 				message:delete() -- This is irreversible.
 				self.Cache[id] = nil
+				self.Metadata[id] = nil
 			end
+		else
+			print("[WARN] Attempt to delete data ID: ".. tostring(id) .." - ID does not exist in Metadata!")
 		end
 	end
+
 
 	return data_table
 end;

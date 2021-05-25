@@ -220,7 +220,7 @@ return function(ENV)
 			main:setContent("```Successfully set your balance to: ".. tostring(content) .."```")
 		end};
 
-		["dataedit"] = {Level = 3, Description = "An interactive command for editing datatables", -- TODO: Cleanup this code lolz
+		["datamod"] = {Level = 3, Description = "An interactive command for editing datatables", -- TODO: Cleanup this code lolz
 		Run = function(self, message)
 			if message.author.id ~= owner then return end
 			local content, option

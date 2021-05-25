@@ -5,10 +5,10 @@
 
 
 -- Injects our external variables and functions into the main environment.
-local functions = require("./botinit.lua")(getfenv(1))
-local previous = getfenv(1)
-for i,v in pairs(functions) do previous[i] = v end
-setfenv(1, previous)
+local oldfenv = getfenv(1) -- TODO: use metatables instead
+local newfenv = require("./botinit.lua")(oldfenv)
+for i,v in pairs(newfenv) do oldfenv[i] = v end
+setfenv(1, oldfenv)
 
 
 client:on("ready", function()
@@ -88,10 +88,8 @@ client:on("messageCreate", function(message)
 end)
 
 
-local PRC = process.env
-local BOT_TOKEN = PRC.BOT_TOKEN
--- If you don't want to use the Heroku CLI to debug the program, replace the above variable with your bot's token.
--- WARNING: DOING THIS IS DANGEROUS. Do NOT make any commits/pushes if your bot's token is here. PLEASE USE HEROKU AND .env (Template is: .env.template)
+local BOT_TOKEN = process.env.BOT_TOKEN or require("./botvars.lua")("BOT_TOKEN")
+-- Make sure you PROTECT your BOT TOKEN! It's security is your highest priority.
 
 if type(BOT_TOKEN) == "string" then
 	client:run("Bot ".. BOT_TOKEN);
