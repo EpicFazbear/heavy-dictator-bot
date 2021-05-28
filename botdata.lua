@@ -18,7 +18,11 @@ return function(ENV)
 		self.Active = (data_storage ~= nil) -- Whether or not we can save persistent data.
 		self.Synced = false -- Whether or not our Cache is ready yet.
 		self.Cache = {} -- Our local table of data for the bot to quickly reference from.
-		self.Metadata = {} -- A table of user/server IDs linked to their corresponding message IDs in the persistent data channel.
+		self.MsgData = {} -- A table of user/server IDs linked to their corresponding message IDs in the persistent data channel.
+		self.Metadata = { -- A table of ID lists for organizing our different types of data.
+			["userdata"] = {};
+			["serverdata"] = {};
+		}
 
 		self.order = {
 			["userdata"] = {"type", "id", "name", "balance", "coal_mined", "equipped", "inventory"};
@@ -58,11 +62,12 @@ return function(ENV)
 				for _, msg in pairs(msg_pool) do
 					if msg.author.id == client.user.id then
 						local decoded = json.decode(msg.content:gsub("```json\n", ""):gsub("```",""))
-						if type(decoded) == "table" then
+						if type(decoded) == "table" and decoded.id ~= nil and decoded.type ~= nil then
 							print("Loading data of ".. tostring(decoded.id) ..".")
 							decoded = self:Serialize(decoded, self[decoded.type])
 							self.Cache[decoded.id] = decoded
-							self.Metadata[decoded.id] = msg.id
+							self.MsgData[decoded.id] = msg.id
+							self.Metadata[decoded.type][decoded.id] = true
 						end
 					end
 				end
@@ -116,18 +121,18 @@ return function(ENV)
 		data.id = id
 		self.Cache[id] = data
 		local encoded = self:Encode(data, datatype)--:gsub(",", ",\n	"):gsub("{","{\n	"):gsub("}","\n}")
-		local message = self.Metadata[id]
+		local message = self.MsgData[id]
 		if message ~= nil then
 			message = data_storage:getMessage(message)
 			if message ~= nil and message.author.id == client.user.id then
 				message:setContent("```json\n".. encoded .."\n```") -- Since data already exists for this ID, simply overwrite it
 			else
-				print("[WARN] Attempt to locate data ID: ".. tostring(id) .." - Metadata ID is invalid or does not exist!")
+				print("[WARN] Attempt to locate data ID: ".. tostring(id) .." - MsgData ID is invalid or does not exist!")
 			end
 		else
 			message = data_storage:send{content = encoded, code = "json"} -- Create new data for our unique ID
 			if message ~= nil then
-				self.Metadata[id] = message.id
+				self.MsgData[id] = message.id
 				print("Checking if we have reached the data chunk limit..") -- Check if we've reached our data chunk limit
 				local debug_time = os.time()
 				local check = false
@@ -170,16 +175,18 @@ return function(ENV)
 	function data_table:Delete(id)
 		if not self.Active then return print("[WARN] Data syncing is currently not avaliable! Please make sure your DATA_CHANNEL variable is correctly set-up!") end
 		assert(type(id) == "string", "An invalid ID was provided!")
-		local message = self.Metadata[id]
+		local message = self.MsgData[id]
 		if message ~= nil then
 			message = data_storage:getMessage(message)
 			if message ~= nil then
+				local type = self.Cache[id].type
 				message:delete() -- This is irreversible.
 				self.Cache[id] = nil
-				self.Metadata[id] = nil
+				self.MsgData[id] = nil
+				self.Metadata[type][id] = nil
 			end
 		else
-			print("[WARN] Attempt to delete data ID: ".. tostring(id) .." - ID does not exist in Metadata!")
+			print("[WARN] Attempt to delete data ID: ".. tostring(id) .." - ID does not exist in MsgData!")
 		end
 	end
 

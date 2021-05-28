@@ -85,7 +85,8 @@ return function(ENV)
 		return level
 	end
 
-	self.checkChannel = function(message, channel)
+	self.isCoalMine = function(message, channel)
+		-- go thru cache(serverdata), return true if found coalmine
 		if message.channel.id ~= channel then
 			message:reply("Invalid channel! Go-to: <#".. tostring(channel) ..">.")
 			message:addReaction("❌")
