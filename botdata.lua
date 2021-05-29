@@ -34,8 +34,8 @@ return function(ENV)
 			["id"] = "",
 			["name"] = "",
 			["balance"] = 0,
-			["coal_mined"] = 0,
-			["equipped"] = "",
+			["coalmined"] = 0,
+			["equipped"] = "default",
 			["inventory"] = {}
 		}
 
@@ -46,7 +46,11 @@ return function(ENV)
 			["coalmine"] = "",
 			["paytype"] = "",
 			["mingoal"] = 100,
-			["maxgoal"] = 300
+			["maxgoal"] = 300,
+			["minpay"] = 750,
+			["maxpay"] = 1000,
+			["cvrate"] = (967/62500), -- Converting RUB into USD
+			["ctrrate"] = 8 -- Used only if the paytype == 2 (coal to RUB ratio)
 		}
 	end
 

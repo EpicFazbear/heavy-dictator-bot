@@ -30,13 +30,13 @@ return function(ENV)
 	self.maxPay = 1000 -- PRC.PAY_MAX (Unused temporarily)
 	self.cvRate = (967/62500) -- PRC.CV_CASH // Same as 0.015472, this is in simplest form.
 	self.coalToRub = 8 -- PRC.CV_COAL
-
-	self.coal = 0
-	self.goal = math.random(self.minGoal, self.maxGoal)
-	self.active = false -- Whether or not a coalmine is currently active (serverdata)
 	self.payType = 1 -- Add an option between [1] random (current), [2] percentages (amount worked), and [3] static (based on the goal amount)
-	self.reached = false
 	-- Above are temporary until serverdata is fully developed. --
+
+	self.coalList = {} -- 0 (COMBINE EVERYTHING INTO statusList)
+	self.goalList = {} -- math.random(self.minGoal, self.maxGoal)
+	self.statusList = {} -- Obsolete, just check if goalList[id] ~= nil (make sure to remove when coal operation is finished)
+	self.reached = false -- Obsolete, statusList[id]
 	self.paid = {}
 	self.workers = {}
 	self.balances = {} -- Will be replaced with userdata once available // RUB only
@@ -61,17 +61,20 @@ return function(ENV)
 		return returned
 	end
 
-	self.isAdmin = function(userId)
-		for _, Id in pairs(admins) do
-			if userId == Id then
-				return true
+	self.isAdmin = function(message)
+		local userId = message.author.id
+		local isAdmin = false
+		if message.member:getPermissions():has("administrator", "manageGuild", "manageChannels") then
+			print("User is a server operator.")
+			isAdmin = true
+		end
+		for _, id in pairs(admins) do
+			if userId == id then
+				print("User is a bot operator.")
+				isAdmin = true
 			end
 		end
-		return false
-	end
-
-	self.isServerAdmin = function(userId, serverId)
-		-- TODO: add a function here later on
+		return isAdmin
 	end
 
 	self.getLevel = function(userId)
