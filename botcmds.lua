@@ -3,7 +3,7 @@
 return function(ENV)
 	setfenv(1, ENV) -- Connects the main environment from botmain.lua into this file.
 
-	local cmd_table = {
+	local cmd_table = { -- self
 		["minecoal"] = {Level = 1, Description = "Mines a piece of coal.",
 		Run = function(self, message)
 			if not checkChannel(message, coalmine) then return end

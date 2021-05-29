@@ -10,7 +10,7 @@ end
 
 return function(ENV)
 	setfenv(1, ENV) -- Connects the main environment from botmain.lua into this file.
-	local data_table = {}
+	local data_table = {} -- self
 
 
 	function data_table:Init()
@@ -18,7 +18,7 @@ return function(ENV)
 		self.Active = (data_storage ~= nil) -- Whether or not we can save persistent data.
 		self.Synced = false -- Whether or not our Cache is ready yet.
 		self.Cache = {} -- Our local table of data for the bot to quickly reference from.
-		self.MsgData = {} -- A table of user/server IDs linked to their corresponding message IDs in the persistent data channel.
+		self.MsgPairs = {} -- A table of user/server IDs linked to their corresponding message IDs in the persistent data channel.
 		self.Metadata = { -- A table of ID lists for organizing our different types of data.
 			["userdata"] = {};
 			["serverdata"] = {};
@@ -28,6 +28,7 @@ return function(ENV)
 			["userdata"] = {"type", "id", "name", "balance", "coal_mined", "equipped", "inventory"};
 			["serverdata"] = {"type", "id", "name", "coalmine", "paytype", "mingoal", "maxgoal"};
 		}
+
 		self.userdata = { -- Template
 			["type"] = "userdata",
 			["id"] = "",
@@ -37,6 +38,7 @@ return function(ENV)
 			["equipped"] = "",
 			["inventory"] = {}
 		}
+
 		self.serverdata = { -- Template
 			["type"] = "serverdata",
 			["id"] = "",
@@ -66,7 +68,7 @@ return function(ENV)
 							print("Loading data of ".. tostring(decoded.id) ..".")
 							decoded = self:Serialize(decoded, self[decoded.type])
 							self.Cache[decoded.id] = decoded
-							self.MsgData[decoded.id] = msg.id
+							self.MsgPairs[decoded.id] = msg.id
 							self.Metadata[decoded.type][decoded.id] = true
 						end
 					end
@@ -121,18 +123,18 @@ return function(ENV)
 		data.id = id
 		self.Cache[id] = data
 		local encoded = self:Encode(data, datatype)--:gsub(",", ",\n	"):gsub("{","{\n	"):gsub("}","\n}")
-		local message = self.MsgData[id]
+		local message = self.MsgPairs[id]
 		if message ~= nil then
 			message = data_storage:getMessage(message)
 			if message ~= nil and message.author.id == client.user.id then
 				message:setContent("```json\n".. encoded .."\n```") -- Since data already exists for this ID, simply overwrite it
 			else
-				print("[WARN] Attempt to locate data ID: ".. tostring(id) .." - MsgData ID is invalid or does not exist!")
+				print("[WARN] Attempt to locate data ID: ".. tostring(id) .." - MsgPairs ID is invalid or does not exist!")
 			end
 		else
 			message = data_storage:send{content = encoded, code = "json"} -- Create new data for our unique ID
 			if message ~= nil then
-				self.MsgData[id] = message.id
+				self.MsgPairs[id] = message.id
 				print("Checking if we have reached the data chunk limit..") -- Check if we've reached our data chunk limit
 				local debug_time = os.time()
 				local check = false
@@ -165,7 +167,7 @@ return function(ENV)
 		--assert(type(value) == "string", "No data VALUE was provided!")
 		if self.Cache[id] ~= nil then
 			self.Cache[id][key] = value
-			return self:Save(id, self.Cache[id], self.Cache[id].type)
+			return self:Save(id, self.Cache[id])
 		else
 			print("[WARN] Attempt to modify data ID: ".. tostring(id) .." - ID does not exist in Cache!")
 		end
@@ -175,18 +177,18 @@ return function(ENV)
 	function data_table:Delete(id)
 		if not self.Active then return print("[WARN] Data syncing is currently not avaliable! Please make sure your DATA_CHANNEL variable is correctly set-up!") end
 		assert(type(id) == "string", "An invalid ID was provided!")
-		local message = self.MsgData[id]
+		local message = self.MsgPairs[id]
 		if message ~= nil then
 			message = data_storage:getMessage(message)
 			if message ~= nil then
 				local type = self.Cache[id].type
 				message:delete() -- This is irreversible.
 				self.Cache[id] = nil
-				self.MsgData[id] = nil
+				self.MsgPairs[id] = nil
 				self.Metadata[type][id] = nil
 			end
 		else
-			print("[WARN] Attempt to delete data ID: ".. tostring(id) .." - ID does not exist in MsgData!")
+			print("[WARN] Attempt to delete data ID: ".. tostring(id) .." - ID does not exist in Cache!")
 		end
 	end
 

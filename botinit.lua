@@ -53,7 +53,7 @@ return function(ENV)
 		local channel = message.channel.id
 		local returned
 		repeat
-			local ran, newmsg = client:waitFor("messageCreate")
+			local _, newmsg = client:waitFor("messageCreate")
 			if newmsg.author.id == author and newmsg.channel.id == channel then
 				returned = newmsg
 			end

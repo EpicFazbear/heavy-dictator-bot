@@ -21,7 +21,7 @@ client:on("ready", function()
 		if mainChannel ~= nil then
 			message = client:getChannel(mainChannel):send("***Starting bot..***")
 		else
-			-- Post startup message to the owner's DMs.
+			message = client:getUser(owner):getPrivateChannel():send("***Starting bot..***")
 		end
 		client:setStatus("idle")
 		client:setGame("Initializing..")
@@ -89,7 +89,7 @@ end)
 
 
 local BOT_TOKEN = process.env.BOT_TOKEN or require("./botvars.lua")("BOT_TOKEN")
--- Make sure you PROTECT your BOT TOKEN! It's security is your highest priority.
+-- Make sure you PROTECT your BOT TOKEN! Its security is your highest priority.
 
 if type(BOT_TOKEN) == "string" then
 	client:run("Bot ".. BOT_TOKEN);
