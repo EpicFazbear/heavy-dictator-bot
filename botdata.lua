@@ -84,11 +84,10 @@ return function(ENV)
 
 	function data_table:Serialize(main, base) -- If new values are ever added, this serialize function will add them to our currently existing datatables.
 		assert(type(data) == "table", "Inputted data is either invalid or malformed!")
-		local template = base
 		for key, value in pairs(main) do
-			template[key] = value
+			base[key] = value
 		end
-		return template
+		return base
 	end
 
 
@@ -173,8 +172,8 @@ return function(ENV)
 		if type(value) == nil then
 			local data = self.Cache[id]
 			if data ~= nil then
-				self.Cache[id][key] = value
-				return self:Save(id, self.Cache[id])
+				data[key] = value
+				return self:Save(id, data)
 			else
 				print("[WARN] Attempt to set key '".. tostring(key) .."' to nil from ID: ".. tostring(id) .." - ID does not exist in Cache!")
 				return false
