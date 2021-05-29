@@ -50,7 +50,7 @@ end)
 
 
 client:on("messageCreate", function(message)
-	if message.author.id == client.user.id or message.author.bot == true or message.author.discriminator == 0000 then return end
+	if message.author.id == client.user.id or message.author.bot == true or message.author.discriminator == 0000 or message.guild == nil then return end
 
 	local cmdstr = string.lower(message.content)
 	if string.sub(cmdstr, 1, 1) == prefix then
@@ -62,7 +62,7 @@ client:on("messageCreate", function(message)
 						data:Run(message)
 					end)
 					if not ran then
-						message:reply("```~~ AN INTERNAL ERROR HAS OCCURRED ~~\n".. tostring(error) .."```")
+						message:reply("```~~ AN INTERNAL ERROR HAS OCCURRED ~~\n".. tostring(error) .."\n".. tostring(debug.traceback()) .."```")
 					end
 				else
 					message:reply("```~~ You do not have access to this command! ~~```")
