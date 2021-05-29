@@ -33,14 +33,8 @@ return function(ENV)
 	self.payType = 1 -- Add an option between [1] random (current), [2] percentages (amount worked), and [3] static (based on the goal amount)
 	-- Above are temporary until serverdata is fully developed. --
 
-	self.coalList = {} -- 0 (COMBINE EVERYTHING INTO statusList)
-	self.goalList = {} -- math.random(self.minGoal, self.maxGoal) (COMBINE EVERYTHING INTO statusList)
 	self.statusList = {}
-	self.reached = false -- Obsolete, statusList[id]
-	self.paid = {}
-	self.workers = {}
 	self.balances = {} -- Will be replaced with userdata once available // RUB only
-	self.userMinedCoal = {} -- Will be modified by getCoal() and addCoal()
 
 	self.sleep = function(n) -- In seconds
 		local t0 = os.clock()
@@ -65,12 +59,17 @@ return function(ENV)
 		local data = data.Cache[serverId]
 		local newStatus = {
 			reached = false,
-			paid = {},
+			paid = {}, -- merge into workers
+			mined = {}, -- merge into workers
 			workers = {},
 			coal = 0,
 			goal = math.random(minGoal, maxGoal)
 		}
 		statusList[serverId] = newStatus
+	end
+
+	self.dataCheck = function(id, datatype)
+		return data.Cache[id] or data:Save(id, {}, datatype)
 	end
 
 	self.isAdmin = function(message)
@@ -129,21 +128,29 @@ return function(ENV)
 		end
 	end
 
-	self.getCoal = function(userId)
-		if type(userMinedCoal[userId]) == "number" then
-			return userMinedCoal[userId]
-		else 
-			userMinedCoal[userId] = 0
-			return userMinedCoal[userId]
+	self.getCoal = function(message)
+		local data = statusList[message.guild.id]
+		if data ~= nil then
+			return data.workers[message.author.id].mined
+		else
+			return 0
 		end
 	end
 
-	self.addCoal = function(userId, amount)
-		if type(userMinedCoal[userId]) == "number" then
-			userMinedCoal[userId] = userMinedCoal[userId] + amount
-		else 
-			userMinedCoal[userId] = amount
-			return userMinedCoal[userId]
+	self.addCoal = function(message, amount)
+		local data = statusList[message.guild.id]
+		if data ~= nil then
+			data = data.workers[message.author.id]
+			if data ~= nil then
+				data.mined = data.mined + amount
+			else
+				data.workers[message.author.id] = {
+					mined = amount,
+					paid = false
+				}
+			end
+		else
+			warn("Attempt to add coal value to a non-initalized server!")
 		end
 	end
 

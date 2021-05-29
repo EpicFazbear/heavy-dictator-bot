@@ -107,28 +107,46 @@ return function(ENV)
 			end
 		end};
 
-		["setmine"] = {Level = 2, Description = "Changes the coal mining channel.", Args = "<channel-id>", -- INTEGRATE INTO DATA
+		["setmine"] = {Level = 2, Description = "Changes the coal mining channel.", Args = "<channel-id>",
 		Run = function(self, message)
 			local target  = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if target ~= nil and target ~= "" then
 				if client:getChannel(target) ~= nil then
-					coalmine = target
+					--coalmine = target
+					data:Save(message.guild.id, {coalmine = target})
 					message:reply("`Successfully changed the 'coalmine' channel!` - <#".. tostring(coalmine) ..">")
+					coalOperation(serverId)
+					client:getChannel(data.coalmine):send("`We are now aiming for '".. tostring(statusList[serverId].goal) .."' pieces of coal.`")
 				else
 					message:reply("`Could not find the channel of the provided ID!`")
 				end
 			else
-				coalmine = message.channel.id
+				--coalmine = message.channel.id
+				data:Save(message.guild.id, {coalmine = message.channel.id})
 				message:reply("`Successfully changed the 'coalmine' channel!` - <#".. tostring(coalmine) ..">")
+				coalOperation(serverId)
+				client:getChannel(data.coalmine):send("`We are now aiming for '".. tostring(statusList[serverId].goal) .."' pieces of coal.`")
 			end
 		end};
 
-		["reset"] = {Level = 2, Description = "Resets the mined coal quota.", -- INTEGRATE INTO DATA
+		["reset"] = {Level = 2, Description = "Resets the mined coal quota.",
 		Run = function(self, message)
+			local data = dataCheck(message.guild.id, "serverdata")
 			local serverId = message.guild.id
-			coalOperation(serverId)
-			message:reply("`Successfully restarted the coal mine operation!`")
-			client:getChannel(data.Cache[guildId].coalmine):send("`We are now aiming for '".. tostring(statusList[serverId].goal) .."' pieces of coal.`")
+			if data.coalmine ~= nil then
+				coalOperation(serverId)
+				message:reply("`Successfully restarted the coal mine operation!`")
+				client:getChannel(data.coalmine):send("`We are now aiming for '".. tostring(statusList[serverId].goal) .."' pieces of coal.`")
+			else
+				local main = message:reply("`No coalmine channel currently exists for this server! Would you like to set THIS channel as the coalmine channel?`")
+				local content = waitForNextMessage(message).content:lower()
+				if content == "yes" then
+					data:Save(message.guild.id, {coalmine = message.channel.id})
+					main:setContent("`Set coalmine channel for this server to: ` <#".. message.channel.id ..">.")
+				else
+					main:setContent("`Procedure cancelled.`")
+				end
+			end
 		end};
 
 		["setpay"] = {Level = 2, Description = "Sets the minimum and maximum range of pay.", Args = "<min,max>", -- INTEGRATE INTO DATA
