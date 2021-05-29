@@ -14,13 +14,13 @@ return function(ENV)
 	self.client = discordia.Client()
 	self.prefix = PRC.PREFIX or getPRC("PREFIX") or ";"
 	self.adminsOnly = (PRC.ADMINS_ONLY or getPRC("ADMINS_ONLY")) == "true"
-	self.ownerOverride = PRC.OWNER_OVERRIDE or getPRC("OWNER_OVERRIDE")
+	self.ownerOverride = PRC.OWNER_OVERRIDE or getPRC("OWNER_OVERRIDE") or "OWNER_ID"
 	local ran, returns = pcall(function() return json.decode(PRC.ADMINS or getPRC("ADMINS")) end)
 	self.admins = (ran == true and returns) or {}
-	self.isInvisible = PRC.INVISIBLE or getPRC("INVISIBLE")
-	self.status = PRC.STATUS or getPRC("STATUS")
-	self.mainChannel = PRC.MAIN_CHANNEL or getPRC("MAIN_CHANNEL")
-	self.destChannel = PRC.DEST_CHANNEL or getPRC("DEST_CHANNEL")
+	self.isInvisible = PRC.INVISIBLE or getPRC("INVISIBLE") or "false"
+	self.status = PRC.STATUS or getPRC("STATUS") or ""
+	self.mainChannel = PRC.MAIN_CHANNEL or getPRC("MAIN_CHANNEL") or ""
+	self.destChannel = PRC.DEST_CHANNEL or getPRC("DEST_CHANNEL") or ""
 
 	-- Below are temporary until serverdata is fully developed. --
 	self.coalmine = self.destChannel

@@ -12,7 +12,7 @@ setfenv(1, oldfenv)
 
 
 client:on("ready", function()
-	owner = client:getUser(ownerOverride) or client.owner
+	owner = (ownerOverride ~= "OWNER_ID" and client:getUser(ownerOverride)) or client.owner
 	owner = owner.id
 	table.insert(admins, owner.id)
 	print("Heavy dictator is now activating..")
