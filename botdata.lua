@@ -56,8 +56,7 @@ return function(ENV)
 
 
 	function data_table:Sync()
-		if not self.Active then return end
-		if self.Synced then return end
+		if self.Active == false or self.Synced == true then return end
 		print("Initializing database sync.. (Retrieving data from the database)")
 		local pin_pool = data_storage:getPinnedMessages()
 		if #pin_pool == 0 then
@@ -115,13 +114,14 @@ return function(ENV)
 
 
 	function data_table:Save(id, data, datatype)
-		if not self.Synced then return print("[WARN] Data syncing is currently not avaliable! Please make sure your DATA_CHANNEL variable is correctly set-up!") end
+		if not self.Synced then print("[WARN] Data syncing is currently not avaliable! Please make sure your DATA_CHANNEL variable is correctly set-up!") return false end
 		assert(type(id) == "string", "An invalid ID was provided!")
 		assert(type(data) == "table", "Inputted data is either invalid or malformed!")
-		if datatype == nil then datatype = data.type end
+		datatype = datatype or data.type
 		local old = self.Cache[id]
 		if old ~= nil then
 			data = self:Serialize(data, old)
+			datatype = datatype or old.type
 		end
 		data = self:Serialize(data, self[datatype])
 		data.id = id
@@ -158,6 +158,7 @@ return function(ENV)
 				end
 			else
 				print("[WARN] Attempt to create new data message: ".. tostring(id) .." - Message to the `data_storage` channel failed to send!")
+				return false
 			end
 		end
 		return self.Cache[id]
@@ -165,21 +166,27 @@ return function(ENV)
 
 
 	function data_table:Modify(id, key, value)
-		if not self.Synced then return print("[WARN] Data syncing is currently not avaliable! Please make sure your DATA_CHANNEL variable is correctly set-up!") end
+		if not self.Synced then print("[WARN] Data syncing is currently not avaliable! Please make sure your DATA_CHANNEL variable is correctly set-up!") return false end
 		assert(type(id) == "string", "An invalid ID was provided!")
 		assert(type(key) == "string", "No data KEY was provided!")
 		--assert(type(value) == "string", "No data VALUE was provided!")
-		if self.Cache[id] ~= nil then
-			self.Cache[id][key] = value
-			return self:Save(id, self.Cache[id])
+		if type(value) == nil then
+			local data = self.Cache[id]
+			if data ~= nil then
+				self.Cache[id][key] = value
+				return self:Save(id, self.Cache[id])
+			else
+				print("[WARN] Attempt to set key '".. tostring(key) .."' to nil from ID: ".. tostring(id) .." - ID does not exist in Cache!")
+				return false
+			end
 		else
-			print("[WARN] Attempt to modify data ID: ".. tostring(id) .." - ID does not exist in Cache!")
+			return self:Save(id, {[key] = value})
 		end
 	end
 
 
 	function data_table:Delete(id)
-		if not self.Active then return print("[WARN] Data syncing is currently not avaliable! Please make sure your DATA_CHANNEL variable is correctly set-up!") end
+		if not self.Synced then print("[WARN] Data syncing is currently not avaliable! Please make sure your DATA_CHANNEL variable is correctly set-up!") return false end
 		assert(type(id) == "string", "An invalid ID was provided!")
 		local message = self.MsgPairs[id]
 		if message ~= nil then
@@ -193,6 +200,7 @@ return function(ENV)
 			end
 		else
 			print("[WARN] Attempt to delete data ID: ".. tostring(id) .." - ID does not exist in Cache!")
+			return false
 		end
 	end
 

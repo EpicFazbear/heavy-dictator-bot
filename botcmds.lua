@@ -2,11 +2,12 @@
 
 return function(ENV)
 	setfenv(1, ENV) -- Connects the main environment from botmain.lua into this file.
-
 	local cmd_table = { -- self
-		["minecoal"] = {Level = 1, Description = "Mines a piece of coal.",
+
+
+		["minecoal"] = {Level = 1, Description = "Mines a piece of coal.", -- INTEGRATE INTO DATA
 		Run = function(self, message)
-			if not checkChannel(message, coalmine) then return end
+			if not isCoalMine(message, coalmine) then return end
 			if not reached then
 				local mined = math.random(1,3)
 				addCoal(message.author.id, mined)
@@ -43,21 +44,21 @@ return function(ENV)
 			end
 		end};
 
-		["goal"] = {Level = 1, Description = "Shows the total amount of coal needed to be mined.",
+		["goal"] = {Level = 1, Description = "Shows the total amount of coal needed to be mined.", -- INTEGRATE INTO DATA
 		Run = function(self, message)
-			if not checkChannel(message, coalmine) then return end
+			if not isCoalMine(message, coalmine) then return end
 			message:reply("About `".. tostring(goal - coal) .."` out of `".. tostring(goal) .."` pieces of coal need to be mined. NOW BACK TO WORK!!")
 		end};
 
-		["total"] = {Level = 1, Description = "Shows the total amount of coal that has already been mined.",
+		["total"] = {Level = 1, Description = "Shows the total amount of coal that has already been mined.", -- INTEGRATE INTO DATA
 		Run = function(self, message)
-			if not checkChannel(message, coalmine) then return end
+			if not isCoalMine(message, coalmine) then return end
 			message:reply("A total of `".. tostring(coal) .."` pieces coal has been mined. NOW BACK TO WORK!!")
 		end};
 
-		["paycheck"] = {Level = 1, Description = "Gives your government paycheck.",
+		["paycheck"] = {Level = 1, Description = "Gives your government paycheck.", -- INTEGRATE INTO DATA
 		Run = function(self, message)
-			if not checkChannel(message, coalmine) then return end
+			if not isCoalMine(message, coalmine) then return end
 			if reached then
 				local found = false
 				for _, worker in pairs(paid) do
@@ -91,9 +92,9 @@ return function(ENV)
 			end
 		end};
 
-		["balance"] = {Level = 1, Description = "Shows your current government balance.",
+		["balance"] = {Level = 1, Description = "Shows your current government balance.", -- INTEGRATE INTO DATA
 		Run = function(self, message)
-			if not checkChannel(message, coalmine) then return end
+			if not isCoalMine(message, coalmine) then return end
 			local balance = getBalance(message.author.id)
 			if balance > 0 then
 				message:reply("You have a total balance of `".. tostring(balance) .." RUB` in your account. NOW GET BACK TO WORK!!")
@@ -106,7 +107,7 @@ return function(ENV)
 			end
 		end};
 
-		["setmine"] = {Level = 2, Description = "Changes the coal mining channel.", Args = "<channel-id>",
+		["setmine"] = {Level = 2, Description = "Changes the coal mining channel.", Args = "<channel-id>", -- INTEGRATE INTO DATA
 		Run = function(self, message)
 			local target  = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if target ~= nil and target ~= "" then
@@ -122,18 +123,15 @@ return function(ENV)
 			end
 		end};
 
-		["reset"] = {Level = 2, Description = "Resets the mined coal quota.",
+		["reset"] = {Level = 2, Description = "Resets the mined coal quota.", -- INTEGRATE INTO DATA
 		Run = function(self, message)
-			reached = false
-			paid = {}
-			workers = {}
-			coal = 0
-			goal = math.random(minGoal, maxGoal)
+			local serverId = message.guild.id
+			coalOperation(serverId)
 			message:reply("`Successfully restarted the coal mine operation!`")
-			client:getChannel(coalmine):send("`We are now aiming for '".. tostring(goal) .."' pieces of coal.`")
+			client:getChannel(data.Cache[guildId].coalmine):send("`We are now aiming for '".. tostring(statusList[serverId].goal) .."' pieces of coal.`")
 		end};
 
-		["setpay"] = {Level = 2, Description = "Sets the minimum and maximum range of pay.", Args = "<min,max>",
+		["setpay"] = {Level = 2, Description = "Sets the minimum and maximum range of pay.", Args = "<min,max>", -- INTEGRATE INTO DATA
 		Run = function(self, message)
 			local args = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if args == nil or args == "" then return end
@@ -148,7 +146,7 @@ return function(ENV)
 			end
 		end};
 
-		["setgoal"] = {Level = 2, Description = "Sets the minimum and maximum range goal.", Args = "<min,max>",
+		["setgoal"] = {Level = 2, Description = "Sets the minimum and maximum range goal.", Args = "<min,max>", -- INTEGRATE INTO DATA
 		Run = function(self, message)
 			local args = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if args == nil or args == "" then return end
@@ -163,7 +161,7 @@ return function(ENV)
 			end
 		end};
 
-		["setrate"] = {Level = 2, Description = "Sets the conversion rate between USD and RUB.", Args = "<conversion-rate>",
+		["setrate"] = {Level = 2, Description = "Sets the conversion rate between USD and RUB.", Args = "<conversion-rate>", -- INTEGRATE INTO DATA
 		Run = function(self, message)
 			local args = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if args == nil or args == "" then return end
@@ -304,9 +302,10 @@ return function(ENV)
 		end};
 	};
 
+
 	local metadata = {}
 	for name, data in pairs(cmd_table) do
-		data.Name = name -- Initialize Name variable
+		data.Name = name -- Initialize .Name variable
 		if metadata[data.Level] == nil then
 			metadata[data.Level] = {}
 		end
@@ -327,7 +326,6 @@ return function(ENV)
 
 	cmd_table["help"] = {Level = 1, Description = "Displays the available commands that the user can run.",
 	Run = function(self, message)
-		local IsAnAdmin = isAdmin(message)
 		local embedMsg = {
 			title = "Commands List",
 			description = "```~~ This bot is in active development. ~~\nIf you have any suggestions, DM them to the owner of this bot: Mattsoft™#0074 (formerly Günsche シ#6704)```\n**Prefix =** `".. tostring(prefix) .."`",
@@ -338,11 +336,11 @@ return function(ENV)
 				{name = "Public Commands", value = "`help` - Displays the available commands that the user can run.\n".. metadata[1]}
 			}
 		}
-		if IsAnAdmin and metadata[2] ~= nil then
+		if isAdmin(message) and metadata[2] ~= nil then
 			table.insert(embedMsg.fields, {name = "Admin Commands", value = metadata[2]})
 		end
 		if message.author.id == owner and metadata[3] ~= nil then
-			table.insert(embedMsg.fields, {name = "Owner Commands", value = metadata[3]})
+			table.insert(embedMsg.fields, {name = "Operator Commands", value = metadata[3]})
 		end
 		message:reply{embed = embedMsg}
 	end}

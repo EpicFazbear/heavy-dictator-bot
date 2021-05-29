@@ -34,8 +34,8 @@ return function(ENV)
 	-- Above are temporary until serverdata is fully developed. --
 
 	self.coalList = {} -- 0 (COMBINE EVERYTHING INTO statusList)
-	self.goalList = {} -- math.random(self.minGoal, self.maxGoal)
-	self.statusList = {} -- Obsolete, just check if goalList[id] ~= nil (make sure to remove when coal operation is finished)
+	self.goalList = {} -- math.random(self.minGoal, self.maxGoal) (COMBINE EVERYTHING INTO statusList)
+	self.statusList = {}
 	self.reached = false -- Obsolete, statusList[id]
 	self.paid = {}
 	self.workers = {}
@@ -59,6 +59,18 @@ return function(ENV)
 			end
 		until returned ~= nil
 		return returned
+	end
+
+	self.coalOperation = function(serverId)
+		local data = data.Cache[serverId]
+		local newStatus = {
+			reached = false,
+			paid = {},
+			workers = {},
+			coal = 0,
+			goal = math.random(minGoal, maxGoal)
+		}
+		statusList[serverId] = newStatus
 	end
 
 	self.isAdmin = function(message)
@@ -100,20 +112,20 @@ return function(ENV)
 	end
 
 	self.getBalance = function(userId)
-		if type(balances[userId]) == "number" then
-			return balances[userId]
+		local data = data.Cache[userId]
+		if data ~= nil then
+			return data.balance
 		else
-			balances[userId] = 0
-			return balances[userId]
+			return 0
 		end
 	end
 
 	self.addBalance = function(userId, amount)
-		if type(balances[userId]) == "number" then
-			balances[userId] = balances[userId] + amount
+		local data = data.Cache[userId]
+		if data ~= nil then
+			data:Modify(userId, "balance", data.balance + amount)
 		else
-			balances[userId] = 0
-			balances[userId] = balances[userId] + amount
+			data:Save(userId, {balance = 0}, "userdata")
 		end
 	end
 
@@ -133,10 +145,6 @@ return function(ENV)
 			userMinedCoal[userId] = amount
 			return userMinedCoal[userId]
 		end
-	end
-
-	self.clearCoal = function(userId)
-		userMinedCoal[userId] = 0
 	end
 
 	return self
