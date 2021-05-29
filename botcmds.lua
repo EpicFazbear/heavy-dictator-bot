@@ -320,23 +320,31 @@ return function(ENV)
 			if type(data.Args) == "string" then
 				append = append .." ".. data.Args
 			end
-			message = message .."`".. append .."` - ".. data.Description .."\n	"
+			message = message .."`".. append .."` - ".. data.Description .."\n"
 		end
 		metadata[level] = message
 	end
 
-	-- TODO: Use discord embeds here
 	cmd_table["help"] = {Level = 1, Description = "Displays the available commands that the user can run.",
 	Run = function(self, message)
-	local IsAnAdmin = isAdmin(message.author.id)
-		message:reply("```~~ This bot is in active development. ~~\nIf you have any suggestions, DM them to the owner of this bot: Mattsoft™#0074 (formerly Günsche シ#6704)``` `Prefix = \"".. tostring(prefix) .."\"`")
-		message:reply("**These are all of the public commands:**\n	`help` - Displays the available commands that the user can run.\n	".. metadata[1])
+		local IsAnAdmin = isAdmin(message)
+		local embedMsg = {
+			title = "Commands List",
+			description = "```~~ This bot is in active development. ~~\nIf you have any suggestions, DM them to the owner of this bot: Mattsoft™#0074 (formerly Günsche シ#6704)```\n**Prefix =** `".. tostring(prefix) .."`",
+			color = 10747904,
+			thumbnail = {url = client.user.avatarURL},
+			author = {name = "Heavy Dictator", icon_url = client.user.avatarURL},
+			fields = {
+				{name = "Public Commands", value = "`help` - Displays the available commands that the user can run.\n".. metadata[1]}
+			}
+		}
 		if IsAnAdmin and metadata[2] ~= nil then
-			message:reply("----------------------------------------------------------\n**These are all of the admin-only commands:**\n	".. metadata[2])
+			table.insert(embedMsg.fields, {name = "Admin Commands", value = metadata[2]})
 		end
 		if message.author.id == owner and metadata[3] ~= nil then
-			message:reply("----------------------------------------------------------\n**These are all of the owner-only commands (The owner of this bot is: <@".. owner ..">):**\n	".. metadata[3])
+			table.insert(embedMsg.fields, {name = "Owner Commands", value = metadata[3]})
 		end
+		message:reply{embed = embedMsg}
 	end}
 
 	return cmd_table
@@ -346,7 +354,7 @@ end;
 	-- TODO: In the long run, re-add these commands with database integration (serverdata table)
 	["deport"] = {Level = 1, Description = "null",
 	Run = function(self, message) -- Deport targeted user to the Gulag
-		if not isAdmin(message.author.id) then return end
+		if not isAdmin(message) then return end
 		local userid = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 		local user = client:getGuild("000000000000000000"):getMember(userid)
 		if user then
@@ -360,7 +368,7 @@ end;
 
 	["release"] = {Level = 1, Description = "null",
 	Run = function(self, message) -- Release targeted user from the Gulag
-		if not isAdmin(message.author.id) then return end
+		if not isAdmin(message) then return end
 		local userid = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 		local user = client:getGuild("000000000000000000"):getMember(userid)
 		if user then
@@ -377,7 +385,7 @@ end;
 --[[ -- Old ;help command --
 	["help"] = {Level = 1, Description = "null",
 	Run = function(self, message)
-		local IsAnAdmin = isAdmin(message.author.id)
+		local IsAnAdmin = isAdmin(message)
 		message:reply("```~~ This bot is in active development. ~~\nIf you have any suggestions, DM them to the owner of this bot: Mattsoft™#0074 (formerly Günsche シ#6704)```\n`Prefix = \"".. tostring(prefix) .."\"`")
 		message:reply("These are all of the public commands.\
 		`minecoal` - Mines a piece of coal.\
