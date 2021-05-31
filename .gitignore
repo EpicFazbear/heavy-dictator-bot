@@ -6,8 +6,8 @@ deps/
 .vscode/
 
 # Ignore logs created by Discordia
-*.log
-*.json
+discordia.log
+gateway.json
 # Ignore optional libraries (Notably opus.dll and sodium.dll for voice)
 *.dll
 # Ignore optional executables (Notably ffmpeg.exe for voice)
