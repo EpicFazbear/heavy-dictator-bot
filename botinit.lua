@@ -34,7 +34,6 @@ return function(ENV)
 	-- Above are temporary until serverdata is fully developed. --
 
 	self.statusList = {}
-	self.balances = {} -- Will be replaced with userdata once available // RUB only
 
 	self.sleep = function(n) -- In seconds
 		local t0 = os.clock()
@@ -56,8 +55,7 @@ return function(ENV)
 	end
 
 	self.coalOperation = function(serverId)
-		local data = data.Cache[serverId]
-		local newStatus = {
+		statusList[serverId] = {
 			reached = false,
 			paid = {}, -- merge into workers
 			mined = {}, -- merge into workers
@@ -65,7 +63,6 @@ return function(ENV)
 			coal = 0,
 			goal = math.random(minGoal, maxGoal)
 		}
-		statusList[serverId] = newStatus
 	end
 
 	self.dataCheck = function(id, datatype)
@@ -74,26 +71,25 @@ return function(ENV)
 
 	self.isAdmin = function(message)
 		local userId = message.author.id
-		local isAdmin = false
 		if message.member:getPermissions():has("administrator", "manageGuild", "manageChannels") then
 			print("User is a server operator.")
-			isAdmin = true
+			return true
 		end
 		for _, id in pairs(admins) do
 			if userId == id then
 				print("User is a bot operator.")
-				isAdmin = true
+				return true
 			end
 		end
-		return isAdmin
+		return false
 	end
 
-	self.getLevel = function(userId)
+	self.getLevel = function(message)
 		local level = 1
-		if self.isAdmin then
+		if isAdmin(message) then
 			level = 2
 		end
-		if userId == owner then
+		if message.author.id == owner then
 			level = 3
 		end
 		return level
@@ -101,17 +97,18 @@ return function(ENV)
 
 	self.isCoalMine = function(message, channel)
 		-- go thru cache(serverdata), return true if found coalmine
-		if message.channel.id ~= channel then
+		local data = dataCheck(message.guild.id, "serverdata")
+		if message.channel.id == data.coalmine then
+			return true
+		else
 			message:reply("Invalid channel! Go-to: <#".. tostring(channel) ..">.")
 			message:addReaction("❌")
 			return false
-		else
-			return true
 		end
 	end
 
 	self.getBalance = function(userId)
-		local data = data.Cache[userId]
+		local data = dataCheck(userId, "userdata")
 		if data ~= nil then
 			return data.balance
 		else
@@ -120,12 +117,8 @@ return function(ENV)
 	end
 
 	self.addBalance = function(userId, amount)
-		local data = data.Cache[userId]
-		if data ~= nil then
-			data:Modify(userId, "balance", data.balance + amount)
-		else
-			data:Save(userId, {balance = 0}, "userdata")
-		end
+		dataCheck(userId, "userdata")
+		data:Modify(userId, "balance", data.balance + amount)
 	end
 
 	self.getCoal = function(message)
@@ -133,6 +126,7 @@ return function(ENV)
 		if data ~= nil then
 			return data.workers[message.author.id].mined
 		else
+			print("[WARN] Attempt to GET coal value from a non-initalized server!")
 			return 0
 		end
 	end
@@ -150,7 +144,7 @@ return function(ENV)
 				}
 			end
 		else
-			warn("Attempt to add coal value to a non-initalized server!")
+			print("[WARN] Attempt to ADD coal value from a non-initalized server!")
 		end
 	end
 
