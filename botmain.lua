@@ -12,9 +12,8 @@ setfenv(1, oldfenv)
 
 
 client:on("ready", function()
-	owner = (ownerOverride ~= "OWNER_ID" and client:getUser(ownerOverride)) or client.owner
-	owner = owner.id
-	table.insert(admins, owner.id)
+	owner = ((ownerOverride ~= "OWNER_ID" and client:getUser(ownerOverride)) or client.owner).id
+	table.insert(admins, owner)
 	print("Heavy dictator is now activating..")
 	local message
 	if isInvisible ~= "true" then
@@ -54,7 +53,7 @@ client:on("messageCreate", function(message)
 
 	local cmdstr = string.lower(message.content)
 	if string.sub(cmdstr, 1, 1) == prefix then
-		local level = getLevel(message.author.id)
+		local level = getLevel(message)
 		for cmd, data in pairs(commands) do -- Runs through our list of commands and connects them to our messageCreate connection.
 			if string.sub(cmdstr, 1, string.len(prefix) + string.len(cmd)) == string.lower(prefix .. cmd) then
 				if data.Level <= level then
