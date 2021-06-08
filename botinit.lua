@@ -23,12 +23,6 @@ return function(ENV)
 	self.destChannel = PRC.DEST_CHANNEL or getPRC("DEST_CHANNEL") or ""
 
 	-- Below are temporary until serverdata is fully developed. --
-	self.coalmine = self.destChannel
-	self.minGoal = 100 -- PRC.GOAL_MIN
-	self.maxGoal = 300 -- PRC.GOAL_MAX
-	self.minPay = 750 -- PRC.PAY_MIN (Unused temporarily)
-	self.maxPay = 1000 -- PRC.PAY_MAX (Unused temporarily)
-	self.cvRate = (967/62500) -- PRC.CV_CASH // Same as 0.015472, this is in simplest form.
 	self.coalToRub = 8 -- PRC.CV_COAL
 	self.payType = 1 -- Add an option between [1] random (current), [2] percentages (amount worked), and [3] static (based on the goal amount)
 	-- Above are temporary until serverdata is fully developed. --
@@ -65,7 +59,15 @@ return function(ENV)
 	end
 
 	self.dataCheck = function(id, datatype)
-		return datastore.Cache[id] or datastore:Save(id, {}, datatype)
+		local returns = datastore.Cache[id]
+		if returns ~= nil then
+			return returns
+		elseif datatype ~= nil then
+			return datastore:Save(id, {}, datatype)
+		else
+			print("[WARN] Attempt to data-check a new ID without providing a datatype!")
+			return false
+		end
 	end
 
 	self.isAdmin = function(message)
@@ -95,7 +97,6 @@ return function(ENV)
 	end
 
 	self.isCoalMine = function(message)
-		-- go thru cache(serverdata), return true if found coalmine
 		local data = dataCheck(message.guild.id, "serverdata")
 		if message.channel.id == data.coalmine then
 			return true

@@ -26,7 +26,7 @@ return function(ENV)
 
 		self.order = {
 			["userdata"] = {"type", "id", "name", "balance", "coal_mined", "equipped", "inventory"};
-			["serverdata"] = {"type", "id", "name", "coalmine", "paytype", "mingoal", "maxgoal"};
+			["serverdata"] = {"type", "id", "name", "coalmine", "paytype", "mingoal", "maxgoal", "minpay", "maxpay", "cvrate", "ctrrate"};
 		}
 
 		self.userdata = { -- Template
@@ -34,7 +34,7 @@ return function(ENV)
 			["id"] = "",
 			["name"] = "",
 			["balance"] = 0,
-			["coalmined"] = 0,
+			["mined"] = 0,
 			["equipped"] = "default",
 			["inventory"] = {}
 		}
@@ -44,7 +44,7 @@ return function(ENV)
 			["id"] = "",
 			["name"] = "",
 			["coalmine"] = "",
-			["paytype"] = "",
+			["paytype"] = "", -- random, ratio, static
 			["mingoal"] = 100,
 			["maxgoal"] = 300,
 			["minpay"] = 750,
@@ -84,15 +84,44 @@ return function(ENV)
 
 	function data_table:Serialize(main, base) -- If new values are ever added, this serialize function will add them to our currently existing datatables.
 		assert(type(main) == "table", "Inputted data is either invalid or malformed!")
-		for key, value in pairs(main) do
-			base[key] = value
+		local template = {}
+		for i,v in pairs(base) do
+			template[i] = v
 		end
-		return base
+		for key, value in pairs(main) do
+			template[key] = value
+		end
+		return template
+	end
+
+
+	function data_table:GetName(id, datatype) -- Retrieves the name of a guild or user from the given ID and datatype.
+		if type(id) == "number" then id = tostring(id) end
+		assert(type(id) == "string", "An invalid ID was provided!")
+		assert(type(datatype) == "string", "DataType is nil! A datatype must be provided when retrieving the name of a given ID.")
+		if datatype == "userdata" then
+			local user = client:getUser(id)
+			if user ~= nil then
+				return user.name .. "#" .. tostring(user.discriminator)
+			else
+				print("[WARN] Attempt to data-check the ID of a nonexistant USER!")
+				return nil
+			end
+		elseif datatype == "serverdata" then
+			local guild = client:getGuild(id)
+			if guild ~= nil then
+				return guild.name
+			else
+				print("[WARN] Attempt to data-check the ID of a nonexistant GUILD!")
+				return nil
+			end
+		end
 	end
 
 
 	function data_table:Encode(data, datatype) -- Decided to make my own JSON encode function because the order of keys isn't persistent in the native function.
 		assert(type(data) == "table", "Inputted data is either invalid or malformed!")
+		if datatype == nil then print("[WARN] In Encode function: Passed datatype is nil or invalid! Resorting to 'userdata' to encode data.") end
 		local ordered = self.order[datatype] or self.order["userdata"]
 		local encoded = "{\n"
 		for _, key in pairs(ordered) do
@@ -112,7 +141,7 @@ return function(ENV)
 	end
 
 
-	function data_table:Save(id, data, datatype)
+	function data_table:Save(id, data, datatype) -- TODO: catch error if MsgPairs[id] == nil
 		if not self.Synced then print("[WARN] Data syncing is currently not avaliable! Please make sure your DATA_CHANNEL variable is correctly set-up!") return false end
 		if type(id) == "number" then id = tostring(id) end
 		assert(type(id) == "string", "An invalid ID was provided!")
@@ -123,8 +152,10 @@ return function(ENV)
 			data = self:Serialize(data, old)
 			datatype = datatype or old.type
 		end
+		assert(type(datatype) == "string", "DataType is nil! A datatype must be provided when constructing a new data entry.")
 		data = self:Serialize(data, self[datatype])
 		data.id = id
+		data.name = self:GetName(id, datatype)
 		self.Cache[id] = data
 		local encoded = self:Encode(data, datatype)--:gsub(",", ",\n	"):gsub("{","{\n	"):gsub("}","\n}")
 		local message = self.MsgPairs[id]
@@ -139,6 +170,7 @@ return function(ENV)
 			message = data_storage:send{content = encoded, code = "json"} -- Create new data for our unique ID
 			if message ~= nil then
 				self.MsgPairs[id] = message.id
+				self.Metadata[data.type][id] = true
 				print("Checking if we have reached the data chunk limit..") -- Check if we've reached our data chunk limit
 				local check = false
 				local msg_pool = data_storage:getMessages(100)
