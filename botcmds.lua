@@ -29,8 +29,8 @@ return function(ENV)
 				if data.coal >= data.goal and not data.reached then
 					data.reached = true
 					data.coal = data.goal
-					local message = message:reply({content = "**We have reached our goal of `".. tostring(data.goal) .."` pieces of coal.** ***Thank you for supporting the Soviet Union!***\n```Do \"".. tostring(prefix) .."paycheck\" to get your Soviet government paychecks.```", tts = true})
-					message:pin()
+					local reply = message:reply({content = "**We have reached our goal of `".. tostring(data.goal) .."` pieces of coal.** ***Thank you for supporting the Soviet Union!***\n```Do \"".. tostring(prefix) .."paycheck\" to get your Soviet government paychecks.```", tts = true})
+					reply:pin()
 				end
 			else
 				message:addReaction("❌")
@@ -63,39 +63,43 @@ return function(ENV)
 			end
 		end};
 
-		["paycheck"] = {Level = 1, Description = "Gives your government paycheck.", -- INTEGRATE INTO DATA
+		["paycheck"] = {Level = 1, Description = "Gives your government paycheck.",
 		Run = function(self, message)
 			if not isCoalMine(message) then return end
-			if reached then
-				local found = false
-				for _, worker in pairs(paid) do
-					if worker == message.member.id then
-						found = true
-					end
-				end
-				local found2 = false
-				for _, worker in pairs(workers) do
-					if worker == message.member.id then
-						found2 = true
-					end
-				end
-				if found then -- Found worker in paid list
-					message:reply("You already RECIEVED YOUR PAYCHECK!!")
+			local sData = dataCheck(message.guild.id, "serverdata") -- Server Data
+			local cData = statusList[message.guild.id] -- Coal Operation Data
+			if cData == nil then
+				message:addReaction("❌")
+				message:reply("Coal operation is not active at this time.")
+			elseif cData.reached then
+				local worker = cData.workers[message.author.id]
+				if worker == nil then -- Did not find worker in contribution or paid list
 					message:addReaction("❌")
-				elseif not found2 then -- Did not find worker in contribution or paid list
 					message:reply("You DID NOT CONTRIBUTE TO WORK!! NO PAY FOR YOU!!!!!!!!")
+				elseif worker.paid == true then -- Found worker in paid list
 					message:addReaction("❌")
+					message:reply("You already RECIEVED YOUR PAYCHECK!!")
 				else -- Found worker in contribution list, not in paid list
-					table.insert(paid, message.member.id)
-					local owed = getCoal(message.author.id) * coalToRub -- math.random(minPay, maxPay)
+					worker.paid = true
+					local owed
+					if sData.paytype == "random" then
+						owed = math.random(sData.minpay, sData.maxpay)
+					elseif sData.paytype == "ratio" then
+						owed = getCoal(message) * sData.ctrrate
+					elseif sData.paytype == "static" then
+						owed = cData.goal * sData.gtrrate
+					else
+						print("[WARN] Server ".. tostring(sData.id) .." has an invalid paytype! Assuming paytype == 'ratio'.")
+						owed = getCoal(message) * sData.ctrrate
+					end
 					addBalance(message.author.id, owed)
-					local foreign = math.floor((owed * cvRate) * 100) / 100
-					message:reply("Here is your paycheck of `".. owed .." RUB`. (About `$".. foreign .."` in CAPITALIST DOLLARS!!)")
+					local foreign = math.floor((owed * sData.cvrate) * 100) / 100
 					message:addReaction("💰")
+					message:reply("Here is your paycheck of `".. owed .." RUB`. (About `$".. foreign .."` in CAPITALIST DOLLARS!!)")
 				end
 			else
-				message:reply("OUR GOAL OF `".. tostring(goal - coal) .."` MORE PIECES OF COAL HASN'T BEEN REACHED YET. NOW BACK TO WORK!!")
 				message:addReaction("❌")
+				message:reply("OUR GOAL OF `".. tostring(goal - coal) .."` MORE PIECES OF COAL HASN'T BEEN REACHED YET. NOW BACK TO WORK!!")
 			end
 		end};
 
@@ -105,11 +109,11 @@ return function(ENV)
 			if balance > 0 then
 				message:reply("You have a total balance of `".. tostring(balance) .." RUB` in your account. NOW GET BACK TO WORK!!")
 			elseif balance == 0 then
+				message:addReaction("❌")
 				message:reply("You have NO total balance in your account. GET WORKING IF YOU WANT TO GET A PAYCHECK!!")
-				message:addReaction("❌")
 			elseif balance < 0 then
-				message:reply("You are IN DEBT BY `".. tostring(math.abs(balance)) .." RUB`. GET BACK TO WORK AND PAY IT OFF!!")
 				message:addReaction("❌")
+				message:reply("You are IN DEBT BY `".. tostring(math.abs(balance)) .." RUB`. GET BACK TO WORK AND PAY IT OFF!!")
 			end
 		end};
 
@@ -234,15 +238,6 @@ return function(ENV)
 			local json = require("json")
 			local string = json.encode(statusList)
 			message:reply("```".. tostring(string) .."```")
-		--[[
-			-- Testing --
-			local main = message:reply("```Set the balance you wish to recieve.```")
-			local newmsg = waitForNextMessage(message)
-			local content = tonumber(newmsg.content)
-			newmsg:delete()
-			local datareturn = datastore:Save(message.author.id, {balance = content}, "userdata")
-			main:setContent("```Successfully set your balance to: ".. tostring(content) .."```")
-		--]]
 		end};
 
 		["datamod"] = {Level = 3, Description = "An interactive command for editing datatables", -- TODO: Cleanup this code lolz
@@ -383,7 +378,7 @@ end;
 	Run = function(self, message) -- Deport targeted user to the Gulag
 		if not isAdmin(message) then return end
 		local userid = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
-		local user = client:getGuild("000000000000000000"):getMember(userid)
+		local user = message.guild:getMember(userid)
 		if user then
 			user:removeRole("000000000000000000")
 			user:addRole("000000000000000000")
@@ -397,7 +392,7 @@ end;
 	Run = function(self, message) -- Release targeted user from the Gulag
 		if not isAdmin(message) then return end
 		local userid = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
-		local user = client:getGuild("000000000000000000"):getMember(userid)
+		local user = message.guild:getMember(userid)
 		if user then
 			user:removeRole("000000000000000000")
 			user:addRole("000000000000000000")
