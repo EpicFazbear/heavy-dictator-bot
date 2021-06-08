@@ -39,16 +39,28 @@ return function(ENV)
 			end
 		end};
 
-		["goal"] = {Level = 1, Description = "Shows the total amount of coal needed to be mined.", -- INTEGRATE INTO DATA
+		["goal"] = {Level = 1, Description = "Shows the total amount of coal needed to be mined.",
 		Run = function(self, message)
 			if not isCoalMine(message) then return end
-			message:reply("About `".. tostring(goal - coal) .."` out of `".. tostring(goal) .."` pieces of coal need to be mined. NOW BACK TO WORK!!")
+			local data = statusList[message.guild.id]
+			if data ~= nil then
+				message:reply("About `".. tostring(data.goal - data.coal) .."` out of `".. tostring(data.goal) .."` pieces of coal need to be mined. NOW BACK TO WORK!!")
+			else
+				message:addReaction("❌")
+				message:reply("Coal operation is not active at this time.")
+			end
 		end};
 
-		["total"] = {Level = 1, Description = "Shows the total amount of coal that has already been mined.", -- INTEGRATE INTO DATA
+		["total"] = {Level = 1, Description = "Shows the total amount of coal that has already been mined.",
 		Run = function(self, message)
 			if not isCoalMine(message) then return end
-			message:reply("A total of `".. tostring(coal) .."` pieces coal has been mined. NOW BACK TO WORK!!")
+			local data = statusList[message.guild.id]
+			if data ~= nil then
+				message:reply("A total of `".. tostring(data.coal) .."` pieces coal has been mined. NOW BACK TO WORK!!")
+			else
+				message:addReaction("❌")
+				message:reply("Coal operation is not active at this time.")
+			end
 		end};
 
 		["paycheck"] = {Level = 1, Description = "Gives your government paycheck.", -- INTEGRATE INTO DATA
@@ -87,9 +99,8 @@ return function(ENV)
 			end
 		end};
 
-		["balance"] = {Level = 1, Description = "Shows your current government balance.", -- INTEGRATE INTO DATA
+		["balance"] = {Level = 1, Description = "Shows your current government balance.",
 		Run = function(self, message)
-			if not isCoalMine(message) then return end
 			local balance = getBalance(message.author.id)
 			if balance > 0 then
 				message:reply("You have a total balance of `".. tostring(balance) .." RUB` in your account. NOW GET BACK TO WORK!!")
@@ -108,7 +119,7 @@ return function(ENV)
 			local target  = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if target ~= nil and target ~= "" then
 				if client:getChannel(target) ~= nil then
-					local data = datastore:Save(serverId, {coalmine = target})
+					local data = datastore:Save(serverId, {coalmine = target}, "serverdata")
 					message:reply("`Successfully changed the 'coalmine' channel!` - <#".. tostring(data.coalmine) ..">")
 					coalOperation(serverId)
 					client:getChannel(data.coalmine):send("`We are now aiming for '".. tostring(statusList[serverId].goal) .."' pieces of coal.`")
@@ -116,7 +127,7 @@ return function(ENV)
 					message:reply("`Could not find the channel of the provided ID!`")
 				end
 			else
-				local data = datastore:Save(serverId, {coalmine = message.channel.id})
+				local data = datastore:Save(serverId, {coalmine = message.channel.id}, "serverdata")
 				message:reply("`Successfully changed the 'coalmine' channel!` - <#".. tostring(data.coalmine) ..">")
 				coalOperation(serverId)
 				client:getChannel(data.coalmine):send("`We are now aiming for '".. tostring(statusList[serverId].goal) .."' pieces of coal.`")
