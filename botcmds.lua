@@ -5,22 +5,17 @@ return function(ENV)
 	local cmd_table = { -- self
 
 
-		["minecoal"] = {Level = 1, Description = "Mines a piece of coal.", -- INTEGRATE INTO DATA
+		["minecoal"] = {Level = 1, Description = "Mines a piece of coal.",
 		Run = function(self, message)
-			if not isCoalMine(message, coalmine) then return end
-			if not reached then
+			if not isCoalMine(message) then return end
+			local data = statusList[message.guild.id]
+			if data == nil then
+				message:addReaction("❌")
+				message:reply("Coal operation is not active at this time.")
+			elseif not data.reached then
 				local mined = math.random(1,3)
-				addCoal(message.author.id, mined)
+				addCoal(message, mined)
 				message:reply("Mined `".. tostring(mined) .."` piece(s) of coal.")
-				local found = false
-				for _, worker in pairs(workers) do
-					if worker == message.member.id then
-						found = true
-					end
-				end
-				if not found then
-					table.insert(workers, message.member.id)
-				end
 			--[[
 				if mined == 1 then
 					message:addReaction("⛏")
@@ -30,35 +25,35 @@ return function(ENV)
 					message:addReaction("⚒")
 				end
 			--]]
-				coal = coal + mined
-				if coal >= goal and not reached then
-					reached = true
-					coal = goal
-					local message = message:reply({content = "**We have reached our goal of `".. tostring(goal) .."` pieces of coal.** ***Thank you for supporting the Soviet Union!***\n```Do \"".. tostring(prefix) .."paycheck\" to get your Soviet government paychecks.```", tts = true})
+				data.coal = data.coal + mined
+				if data.coal >= data.goal and not data.reached then
+					data.reached = true
+					data.coal = data.goal
+					local message = message:reply({content = "**We have reached our goal of `".. tostring(data.goal) .."` pieces of coal.** ***Thank you for supporting the Soviet Union!***\n```Do \"".. tostring(prefix) .."paycheck\" to get your Soviet government paychecks.```", tts = true})
 					message:pin()
 				end
 			else
 				message:addReaction("❌")
-				 message:reply("WE HAVE ALREADY REACHED OUR GOAL OF `".. tostring(goal) .."` PIECES OF COAL!!")
+				message:reply("WE HAVE ALREADY REACHED OUR GOAL OF `".. tostring(data.goal) .."` PIECES OF COAL!!")
 				--// Quick fix because people don't understand what ❌ is.
 			end
 		end};
 
 		["goal"] = {Level = 1, Description = "Shows the total amount of coal needed to be mined.", -- INTEGRATE INTO DATA
 		Run = function(self, message)
-			if not isCoalMine(message, coalmine) then return end
+			if not isCoalMine(message) then return end
 			message:reply("About `".. tostring(goal - coal) .."` out of `".. tostring(goal) .."` pieces of coal need to be mined. NOW BACK TO WORK!!")
 		end};
 
 		["total"] = {Level = 1, Description = "Shows the total amount of coal that has already been mined.", -- INTEGRATE INTO DATA
 		Run = function(self, message)
-			if not isCoalMine(message, coalmine) then return end
+			if not isCoalMine(message) then return end
 			message:reply("A total of `".. tostring(coal) .."` pieces coal has been mined. NOW BACK TO WORK!!")
 		end};
 
 		["paycheck"] = {Level = 1, Description = "Gives your government paycheck.", -- INTEGRATE INTO DATA
 		Run = function(self, message)
-			if not isCoalMine(message, coalmine) then return end
+			if not isCoalMine(message) then return end
 			if reached then
 				local found = false
 				for _, worker in pairs(paid) do
@@ -94,7 +89,7 @@ return function(ENV)
 
 		["balance"] = {Level = 1, Description = "Shows your current government balance.", -- INTEGRATE INTO DATA
 		Run = function(self, message)
-			if not isCoalMine(message, coalmine) then return end
+			if not isCoalMine(message) then return end
 			local balance = getBalance(message.author.id)
 			if balance > 0 then
 				message:reply("You have a total balance of `".. tostring(balance) .." RUB` in your account. NOW GET BACK TO WORK!!")
@@ -109,21 +104,20 @@ return function(ENV)
 
 		["setmine"] = {Level = 2, Description = "Changes the coal mining channel.", Args = "<channel-id>",
 		Run = function(self, message)
+			local serverId = message.guild.id
 			local target  = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if target ~= nil and target ~= "" then
 				if client:getChannel(target) ~= nil then
-					--coalmine = target
-					data:Save(message.guild.id, {coalmine = target})
-					message:reply("`Successfully changed the 'coalmine' channel!` - <#".. tostring(coalmine) ..">")
+					local data = datastore:Save(serverId, {coalmine = target})
+					message:reply("`Successfully changed the 'coalmine' channel!` - <#".. tostring(data.coalmine) ..">")
 					coalOperation(serverId)
 					client:getChannel(data.coalmine):send("`We are now aiming for '".. tostring(statusList[serverId].goal) .."' pieces of coal.`")
 				else
 					message:reply("`Could not find the channel of the provided ID!`")
 				end
 			else
-				--coalmine = message.channel.id
-				data:Save(message.guild.id, {coalmine = message.channel.id})
-				message:reply("`Successfully changed the 'coalmine' channel!` - <#".. tostring(coalmine) ..">")
+				local data = datastore:Save(serverId, {coalmine = message.channel.id})
+				message:reply("`Successfully changed the 'coalmine' channel!` - <#".. tostring(data.coalmine) ..">")
 				coalOperation(serverId)
 				client:getChannel(data.coalmine):send("`We are now aiming for '".. tostring(statusList[serverId].goal) .."' pieces of coal.`")
 			end
@@ -131,8 +125,8 @@ return function(ENV)
 
 		["reset"] = {Level = 2, Description = "Resets the mined coal quota.",
 		Run = function(self, message)
-			local data = dataCheck(message.guild.id, "serverdata")
 			local serverId = message.guild.id
+			local data = dataCheck(serverId, "serverdata")
 			if data.coalmine ~= nil then
 				coalOperation(serverId)
 				message:reply("`Successfully restarted the coal mine operation!`")
@@ -141,7 +135,7 @@ return function(ENV)
 				local main = message:reply("`No coalmine channel currently exists for this server! Would you like to set THIS channel as the coalmine channel?`")
 				local content = waitForNextMessage(message).content:lower()
 				if content == "yes" then
-					data:Save(message.guild.id, {coalmine = message.channel.id})
+					datastore:Save(message.guild.id, {coalmine = message.channel.id})
 					main:setContent("`Set coalmine channel for this server to: ` <#".. message.channel.id ..">.")
 				else
 					main:setContent("`Procedure cancelled.`")
@@ -223,16 +217,21 @@ return function(ENV)
 			end
 		end};
 
-		["debug"] = {Level = 3, Description = "A debug command.",
+		["debug"] = {Level = 2, Description = "A debug command.",
 		Run = function(self, message)
-			if message.author.id ~= owner then return end
+			--if message.author.id ~= owner then return end
+			local json = require("json")
+			local string = json.encode(statusList)
+			message:reply("```".. tostring(string) .."```")
+		--[[
 			-- Testing --
 			local main = message:reply("```Set the balance you wish to recieve.```")
 			local newmsg = waitForNextMessage(message)
 			local content = tonumber(newmsg.content)
 			newmsg:delete()
-			local datareturn = data:Save(message.author.id, {balance = content}, "userdata")
+			local datareturn = datastore:Save(message.author.id, {balance = content}, "userdata")
 			main:setContent("```Successfully set your balance to: ".. tostring(content) .."```")
+		--]]
 		end};
 
 		["datamod"] = {Level = 3, Description = "An interactive command for editing datatables", -- TODO: Cleanup this code lolz
@@ -256,7 +255,7 @@ return function(ENV)
 			if content == "type" or content == "id" then
 				main:setContent("```Sorry! This key value is protected in order to keep the integrity of the stored data. Cancelling the procedure..```")
 			end
-			local datatable = data.Cache[content]
+			local datatable = datastore.Cache[content]
 			if datatable ~= nil then
 				if option == "del" then
 					main:setContent("```ARE YOU SURE YOU WISH TO DELETE ALL THE DATA FOR ".. tostring(datatable.id) .." (".. tostring(datatable.name) ..")?```")
@@ -264,8 +263,8 @@ return function(ENV)
 					content = newmsg.content:lower()
 					newmsg:delete()
 					if content == "yes" then
-						data.Cache[content] = nil
-						data:Delete(datatable.id)
+						datastore.Cache[content] = nil
+						datastore:Delete(datatable.id)
 						main:setContent("```Successfully deleted the data of ".. tostring(datatable.id) .." (".. tostring(datatable.name) ..").```")
 					else
 						main:setContent("```Cancelled the procedure.```")
@@ -283,7 +282,7 @@ return function(ENV)
 							content = newmsg.content:lower()
 							newmsg:delete()
 							if content == "yes" then
-								data:Modify(datatable.id, keyname, nil)
+								datastore:Modify(datatable.id, keyname, nil)
 								main:setContent("```Successfully cleared the '".. tostring(keyname) .."' key from the data of ".. tostring(datatable.id) .." (".. tostring(datatable.name) ..").```")
 							else
 								main:setContent("```Cancelled the procedure.```")
@@ -304,7 +303,7 @@ return function(ENV)
 							content = newmsg.content:lower()
 							newmsg:delete()
 							if content == "yes" then
-								data:Modify(datatable.id, keyname, newvalue)
+								datastore:Modify(datatable.id, keyname, newvalue)
 								main:setContent("```Successfully overwritten the key '".. tostring(keyname) .."' key to \"".. tostring(newvalue) .."\" for the data of ".. tostring(datatable.id) .." (".. tostring(datatable.name) ..").```")
 							else
 								main:setContent("```Cancelled the procedure.```")
@@ -321,6 +320,7 @@ return function(ENV)
 	};
 
 
+	local prefix = tostring(process.env.PREFIX or require("./botvars.lua")("PREFIX") or ";")
 	local metadata = {}
 	for name, data in pairs(cmd_table) do
 		data.Name = name -- Initialize .Name variable
@@ -333,7 +333,7 @@ return function(ENV)
 	for level, array in pairs(metadata) do
 		local message = ""
 		for _, data in pairs(array) do
-			local append = data.Name
+			local append = prefix .. data.Name
 			if type(data.Args) == "string" then
 				append = append .." ".. data.Args
 			end
@@ -351,7 +351,7 @@ return function(ENV)
 			thumbnail = {url = client.user.avatarURL},
 			author = {name = "Heavy Dictator", icon_url = client.user.avatarURL},
 			fields = {
-				{name = "Public Commands", value = "`help` - Displays the available commands that the user can run.\n".. metadata[1]}
+				{name = "Public Commands", value = "`".. prefix .."help` - Displays the available commands that the user can run.\n".. metadata[1]}
 			}
 		}
 		if isAdmin(message) and metadata[2] ~= nil then
