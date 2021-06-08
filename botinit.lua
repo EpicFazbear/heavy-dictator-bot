@@ -29,6 +29,16 @@ return function(ENV)
 
 	self.statusList = {}
 
+	self.coalOperation = function(serverId)
+		local data = dataCheck(serverId, "serverdata")
+		statusList[serverId] = {
+			reached = false,
+			workers = {},
+			coal = 0,
+			goal = math.random(data.mingoal, data.maxgoal)
+		}
+	end
+
 	self.sleep = function(n) -- In seconds
 		local t0 = os.clock()
 		while os.clock() - t0 <= n do end
@@ -48,16 +58,6 @@ return function(ENV)
 		return returned
 	end
 
-	self.coalOperation = function(serverId)
-		local data = dataCheck(serverId, "serverdata")
-		statusList[serverId] = {
-			reached = false,
-			workers = {},
-			coal = 0,
-			goal = math.random(data.mingoal, data.maxgoal)
-		}
-	end
-
 	self.dataCheck = function(id, datatype)
 		local returns = datastore.Cache[id]
 		if returns ~= nil then
@@ -72,15 +72,13 @@ return function(ENV)
 
 	self.isAdmin = function(message)
 		local userId = message.author.id
-		if message.member:getPermissions():has("administrator", "manageGuild", "manageChannels") then
-			print("User is a server operator.")
-			return true
-		end
 		for _, id in pairs(admins) do
 			if userId == id then
-				print("User is a bot operator.")
 				return true
 			end
+		end
+		if message.member:getPermissions():has("administrator", "manageGuild", "manageChannels") then
+			return true
 		end
 		return false
 	end
@@ -122,7 +120,7 @@ return function(ENV)
 
 	self.addBalance = function(userId, amount)
 		local data = dataCheck(userId, "userdata")
-		datastore:Modify(userId, "balance", data.balance + amount)
+		datastore:Save(userId, {balance = data.balance + amount})
 	end
 
 	self.getCoal = function(message)

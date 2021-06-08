@@ -25,8 +25,8 @@ return function(ENV)
 		}
 
 		self.order = {
-			["userdata"] = {"type", "id", "name", "balance", "coal_mined", "equipped", "inventory"};
-			["serverdata"] = {"type", "id", "name", "coalmine", "paytype", "mingoal", "maxgoal", "minpay", "maxpay", "cvrate", "ctrrate"};
+			["userdata"] = {"type", "id", "name", "balance", "mined", "equipped", "inventory"};
+			["serverdata"] = {"type", "id", "name", "coalmine", "paytype", "mingoal", "maxgoal", "minpay", "maxpay", "cvrate", "ctrrate", "gtrrate"};
 		}
 
 		self.userdata = { -- Template
@@ -44,13 +44,14 @@ return function(ENV)
 			["id"] = "",
 			["name"] = "",
 			["coalmine"] = "",
-			["paytype"] = "", -- random, ratio, static
+			["paytype"] = "ratio", -- random, ratio, static
 			["mingoal"] = 100,
 			["maxgoal"] = 300,
-			["minpay"] = 750,
-			["maxpay"] = 1000,
+			["minpay"] = 750, -- Used only if the paytype == "random" (minimum random value)
+			["maxpay"] = 1000, -- Used only if the paytype == "random" (maximum random value)
 			["cvrate"] = (967/62500), -- Converting RUB into USD
-			["ctrrate"] = 8 -- Used only if the paytype == 2 (coal to RUB ratio)
+			["ctrrate"] = 8, -- Used only if the paytype == "ratio" (coal to RUB ratio)
+			["gtrrate"] = 5 -- Used only if the paytype == "static" (statically based on goal amount)
 		}
 	end
 
@@ -141,7 +142,9 @@ return function(ENV)
 	end
 
 
-	function data_table:Save(id, data, datatype) -- TODO: catch error if MsgPairs[id] == nil
+	function data_table:Save(id, data, datatype) -- Writes new data into our cache, and into our datastores.
+		-- TODO: catch error if MsgPairs[id] == nil
+		-- (if for whatever reason, a data message gets deleted out of the blue, create a new one based on the existing data stored in the local Cache)
 		if not self.Synced then print("[WARN] Data syncing is currently not avaliable! Please make sure your DATA_CHANNEL variable is correctly set-up!") return false end
 		if type(id) == "number" then id = tostring(id) end
 		assert(type(id) == "string", "An invalid ID was provided!")
@@ -196,7 +199,7 @@ return function(ENV)
 	end
 
 
-	function data_table:Modify(id, key, value)
+	function data_table:Modify(id, key, value) -- A method of calling data_table:Save(), but supports resetting values to nil (or to their defaults)
 		if not self.Synced then print("[WARN] Data syncing is currently not avaliable! Please make sure your DATA_CHANNEL variable is correctly set-up!") return false end
 		assert(type(id) == "string", "An invalid ID was provided!")
 		assert(type(key) == "string", "No data KEY was provided!")
@@ -216,7 +219,7 @@ return function(ENV)
 	end
 
 
-	function data_table:Delete(id)
+	function data_table:Delete(id) -- Deletes data from both our Cache and the datastores if we ever need to.
 		if not self.Synced then print("[WARN] Data syncing is currently not avaliable! Please make sure your DATA_CHANNEL variable is correctly set-up!") return false end
 		assert(type(id) == "string", "An invalid ID was provided!")
 		local message = self.MsgPairs[id]
