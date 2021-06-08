@@ -2,7 +2,8 @@
 
 -- RegEx is scary
 local function parse(input)
-	local s1, s2 = string.match(input, "(.*)=%s*(.*)\r")
+	local s1, s2 = string.match(input, "(.*)=%s*(.*)")
+	if s2 ~= nil and string.sub(s2, #s2) == "\r" then s2 = string.sub(s2, 1, #s2-1) end
 	if s1 == nil or s2 == nil then return false end
 	s1 = string.sub(s1, 1, (string.find(s1, "%s+$") or #s1+1)-1)
 	return s1, s2

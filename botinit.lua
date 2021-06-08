@@ -10,7 +10,7 @@ return function(ENV)
 	local self = {} -- init_table
 
 	self.commands = require("./botcmds.lua")(ENV) -- Loads in the commands into the table so that it can get loaded into the main environment later.
-	self.data = require("./botdata.lua")(ENV) -- Loads in the botdata module into the table.
+	self.datastore = require("./botdata.lua")(ENV) -- Loads in the botdata module into the table.
 	self.client = discordia.Client()
 	self.prefix = PRC.PREFIX or getPRC("PREFIX") or ";"
 	self.adminsOnly = (PRC.ADMINS_ONLY or getPRC("ADMINS_ONLY")) == "true"
@@ -55,18 +55,17 @@ return function(ENV)
 	end
 
 	self.coalOperation = function(serverId)
+		local data = dataCheck(serverId, "serverdata")
 		statusList[serverId] = {
 			reached = false,
-			paid = {}, -- merge into workers
-			mined = {}, -- merge into workers
 			workers = {},
 			coal = 0,
-			goal = math.random(minGoal, maxGoal)
+			goal = math.random(data.mingoal, data.maxgoal)
 		}
 	end
 
 	self.dataCheck = function(id, datatype)
-		return data.Cache[id] or data:Save(id, {}, datatype)
+		return datastore.Cache[id] or datastore:Save(id, {}, datatype)
 	end
 
 	self.isAdmin = function(message)
@@ -95,13 +94,17 @@ return function(ENV)
 		return level
 	end
 
-	self.isCoalMine = function(message, channel)
+	self.isCoalMine = function(message)
 		-- go thru cache(serverdata), return true if found coalmine
 		local data = dataCheck(message.guild.id, "serverdata")
 		if message.channel.id == data.coalmine then
 			return true
+		elseif data.coalmine ~= "" then
+			message:reply("Invalid channel! Go-to: <#".. tostring(data.coalmine) ..">.")
+			message:addReaction("❌")
+			return false
 		else
-			message:reply("Invalid channel! Go-to: <#".. tostring(channel) ..">.")
+			message:reply("No coalmine channel has been set on this server yet!")
 			message:addReaction("❌")
 			return false
 		end
@@ -117,14 +120,19 @@ return function(ENV)
 	end
 
 	self.addBalance = function(userId, amount)
-		dataCheck(userId, "userdata")
-		data:Modify(userId, "balance", data.balance + amount)
+		local data = dataCheck(userId, "userdata")
+		datastore:Modify(userId, "balance", data.balance + amount)
 	end
 
 	self.getCoal = function(message)
 		local data = statusList[message.guild.id]
 		if data ~= nil then
-			return data.workers[message.author.id].mined
+			local worker = data.workers[message.author.id]
+			if worker ~= nil then
+				return worker.mined
+			else
+				return 0
+			end
 		else
 			print("[WARN] Attempt to GET coal value from a non-initalized server!")
 			return 0
@@ -134,9 +142,9 @@ return function(ENV)
 	self.addCoal = function(message, amount)
 		local data = statusList[message.guild.id]
 		if data ~= nil then
-			data = data.workers[message.author.id]
-			if data ~= nil then
-				data.mined = data.mined + amount
+			local worker = data.workers[message.author.id]
+			if worker ~= nil then
+				worker.mined = worker.mined + amount
 			else
 				data.workers[message.author.id] = {
 					mined = amount,

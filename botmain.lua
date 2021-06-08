@@ -29,12 +29,12 @@ client:on("ready", function()
 		print("Started in Invisible mode.")
 	end
 
-	data:Init() -- Initalize our database module.
-	if data.Active then
+	datastore:Init() -- Initalize our database module.
+	if datastore.Active then
 		if message then
 			message:setContent(message.content .. "\n***Initializing database sync.. (Retrieving data from database)***")
 		end
-		data:Sync() -- Build our data cache by calling the sync function.
+		datastore:Sync() -- Build our data cache by calling the sync function.
 	end
 
 	if isInvisible ~= "true" then
@@ -61,7 +61,7 @@ client:on("messageCreate", function(message)
 						data:Run(message)
 					end)
 					if not ran then
-						message:reply("```~~ AN INTERNAL ERROR HAS OCCURRED ~~\n".. tostring(error) .."\n".. tostring(debug.traceback()) .."```")
+						message:reply("```~~ AN INTERNAL ERROR HAS OCCURRED ~~\n".. tostring(error) .."```")
 					end
 				else
 					message:reply("```~~ You do not have access to this command! ~~```")

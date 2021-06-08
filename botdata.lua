@@ -83,7 +83,7 @@ return function(ENV)
 
 
 	function data_table:Serialize(main, base) -- If new values are ever added, this serialize function will add them to our currently existing datatables.
-		assert(type(data) == "table", "Inputted data is either invalid or malformed!")
+		assert(type(main) == "table", "Inputted data is either invalid or malformed!")
 		for key, value in pairs(main) do
 			base[key] = value
 		end
@@ -114,6 +114,7 @@ return function(ENV)
 
 	function data_table:Save(id, data, datatype)
 		if not self.Synced then print("[WARN] Data syncing is currently not avaliable! Please make sure your DATA_CHANNEL variable is correctly set-up!") return false end
+		if type(id) == "number" then id = tostring(id) end
 		assert(type(id) == "string", "An invalid ID was provided!")
 		assert(type(data) == "table", "Inputted data is either invalid or malformed!")
 		datatype = datatype or data.type
@@ -139,7 +140,6 @@ return function(ENV)
 			if message ~= nil then
 				self.MsgPairs[id] = message.id
 				print("Checking if we have reached the data chunk limit..") -- Check if we've reached our data chunk limit
-				local debug_time = os.time()
 				local check = false
 				local msg_pool = data_storage:getMessages(100)
 				for _, msg in pairs(msg_pool) do
@@ -150,9 +150,9 @@ return function(ENV)
 					end
 				end
 				if check == true then
-					print("Chunk limit has not been reached yet..", os.time() - debug_time)
+					print("Chunk limit has not been reached yet..")
 				else
-					print("Chunk limit reached. Creating new chunk separator..", os.time() - debug_time)
+					print("Chunk limit reached. Creating new chunk separator..")
 					mark_pin(data_storage)
 				end
 			else
