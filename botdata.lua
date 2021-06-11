@@ -49,27 +49,28 @@ return function(ENV)
 			["maxgoal"] = 300,
 			["minpay"] = 750, -- Used only if the paytype == "random" (minimum random value)
 			["maxpay"] = 1000, -- Used only if the paytype == "random" (maximum random value)
-			["cvrate"] = (967/62500), -- Converting RUB into USD
-			["ctrrate"] = 8, -- Used only if the paytype == "ratio" (coal to RUB ratio)
-			["gtrrate"] = 5 -- Used only if the paytype == "static" (statically based on goal amount)
+			["usrate"] = (967/62500), -- Converting RUB into USD
+			["ctrate"] = 8, -- Used only if the paytype == "ratio" (coal to RUB ratio)
+			["gtrate"] = 4 -- Used only if the paytype == "static" (statically based on goal amount)
 		}
 	end
 
 
 	function data_table:Sync()
 		if self.Active == false or self.Synced == true then return end
-		print("Initializing database sync.. (Retrieving data from the database)")
+		print("[DATA] Initializing database sync.. (Retrieving data from the database)")
 		local pin_pool = data_storage:getPinnedMessages()
 		if #pin_pool == 0 then
 			mark_pin(data_storage)
 		else
 			for _, pin in pairs(pin_pool) do
 				local msg_pool = data_storage:getMessagesAfter(pin.id, 100)
+				print("[DATA] Loading ".. tostring(#msg_pool) .." stored datatables into Cache.")
 				for _, msg in pairs(msg_pool) do
 					if msg.author.id == client.user.id then
 						local decoded = json.decode(msg.content:gsub("```json\n", ""):gsub("```",""))
 						if type(decoded) == "table" and decoded.id ~= nil and decoded.type ~= nil then
-							print("Loading data of ".. tostring(decoded.id) ..".")
+							--print("[DATA] Loading data of ".. tostring(decoded.id) ..".")
 							decoded = self:Serialize(decoded, self[decoded.type])
 							self.Cache[decoded.id] = decoded
 							self.MsgPairs[decoded.id] = msg.id
@@ -174,7 +175,7 @@ return function(ENV)
 			if message ~= nil then
 				self.MsgPairs[id] = message.id
 				self.Metadata[data.type][id] = true
-				print("Checking if we have reached the data chunk limit..") -- Check if we've reached our data chunk limit
+				--print("[DATA] Checking if we have reached the data chunk limit..") -- Check if we've reached our data chunk limit
 				local check = false
 				local msg_pool = data_storage:getMessages(100)
 				for _, msg in pairs(msg_pool) do
@@ -185,9 +186,9 @@ return function(ENV)
 					end
 				end
 				if check == true then
-					print("Chunk limit has not been reached yet..")
+					print("[DATA] Chunk limit has not been reached yet..")
 				else
-					print("Chunk limit reached. Creating new chunk separator..")
+					print("[DATA] Chunk limit reached. Creating new chunk separator..")
 					mark_pin(data_storage)
 				end
 			else
@@ -241,25 +242,3 @@ return function(ENV)
 
 	return data_table
 end;
-
---[[
-on start, immediately create a cache, constructed from the message pool
-if data is accessed before the cache is created, post error saying to try again
-creating cache: goto database channel
-loop through the entire database, in 100 intervals
-at every consecutive loop, get the earliest message id, and get 100 messages from before that message
----------
-create two caches: actual data, and message id metadata
-when data is updated, retrieve message id from metadata
-goto message in database via message id
-from there, convert raw data into json and edit the message's content
----------
-in summary,
-retrieve data from database and construct a raw data and metadata caches
-only read from the caches
-when modifying values, modify the cache first, then create a coroutine to modify the permanent (message) data next
----------
-if no data found from cache,
-create new data from a template
-and send a new message in the database channel
---]]

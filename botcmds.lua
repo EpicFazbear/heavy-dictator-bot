@@ -117,6 +117,8 @@ return function(ENV)
 			end
 		end};
 
+		-- Admin-only commands (Server admins, and bot operators)
+
 		["setmine"] = {Level = 2, Description = "Changes the coal mining channel.", Args = "<channel-id>",
 		Run = function(self, message)
 			local serverId = message.guild.id
@@ -150,7 +152,7 @@ return function(ENV)
 				local main = message:reply("`No coalmine channel currently exists for this server! Would you like to set THIS channel as the coalmine channel?`")
 				local content = waitForNextMessage(message).content:lower()
 				if content == "yes" then
-					datastore:Save(message.guild.id, {coalmine = message.channel.id})
+					datastore:Save(serverId, {coalmine = message.channel.id}, "serverdata")
 					main:setContent("`Set coalmine channel for this server to: ` <#".. message.channel.id ..">.")
 				else
 					main:setContent("`Procedure cancelled.`")
@@ -158,45 +160,116 @@ return function(ENV)
 			end
 		end};
 
-		["setpay"] = {Level = 2, Description = "Sets the minimum and maximum range of pay.", Args = "<min,max>", -- INTEGRATE INTO DATA
+		["setgoal"] = {Level = 2, Description = "Sets the minimum and maximum range goal.", Args = "<min,max>", 
 		Run = function(self, message)
+			local serverId = message.guild.id
+			local data = dataCheck(serverId, "serverdata")
 			local args = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
-			if args == nil or args == "" then return end
+			if args == nil or args == "" then
+				message:reply("```Unable to change 'Goal range' (Range is currently: ".. tostring(data.mingoal) .."-".. tostring(data.maxgoal) ..") - No arguments were provided.```")
+			return end
 			local split = string.find(args, ",")
-			if split == nil then return end
-			local num1 = tonumber(string.sub(args, 1, split-1))
-			local num2 = tonumber(string.sub(args, split+1, string.len(args)))
-			if num1 and num2 then
-				minPay = num1
-				maxPay = num2
-				message:reply("`Successfully made the following changes:`\n```Minimum pay (in RUB): ".. tostring(minPay) .."\nMaximum pay (in RUB): ".. tostring(maxPay) .."```")
+			if split == nil then
+				message:reply("```Unable to change 'Goal range' - The arguments provided are invalid. (They must be formatted: number,number)```")
+			return end
+			local min = tonumber(string.sub(args, 1, split-1))
+			local max = tonumber(string.sub(args, split+1, string.len(args)))
+			if min ~= nil and max ~= nil then
+				datastore:Save(serverId, {mingoal = min, maxgoal = max}, "serverdata")
+				message:reply("```Successfully made the following changes:\nMinimum goal: ".. tostring(min) .."\nMaximum goal: ".. tostring(max) .."```")
+			else
+				message:reply("```Unable to change 'Goal range' - The arguments provided are invalid. (They must be formatted: number,number)```")
 			end
 		end};
 
-		["setgoal"] = {Level = 2, Description = "Sets the minimum and maximum range goal.", Args = "<min,max>", -- INTEGRATE INTO DATA
+		["paytype"] = {Level = 3, Description = "Sets the way paychecks are given out on a specific server.", Args = "<random/ratio/static>", 
 		Run = function(self, message)
+			local serverId = message.guild.id
+			local data = dataCheck(serverId, "serverdata")
 			local args = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
-			if args == nil or args == "" then return end
+			if args == nil or args == "" then
+				message:reply("```Unable to change 'Pay type' (Currently set to: ".. tostring(data.paytype) ..") - No arguments were provided.```")
+			else
+				args = string.lower(args)
+				if args == "random" or args == "ratio" or args == "static" then
+					datastore:Save(serverId, {paytype = args}, "serverdata")
+					message:reply("```Successfully made the following changes:\nNew pay type: ".. tostring(args) .."```")
+				else
+					message:reply("```Unable to change 'Pay type' (".. tostring(prefix) .. tostring(self.Name) ..") - The arguments provided are invalid. (Must be 'random', 'ratio', or 'static')```")
+				end
+			end 
+		end};
+
+		-- I'm restricting these commands for now while I figure out how to keep the paycheck system balanced (so people cannot get tons of money easily).
+
+		["setpay"] = {Level = 3, Description = "Sets the minimum and maximum range of pay. (Only used when the paytype is 'random')", Args = "<min,max>", 
+		Run = function(self, message)
+			local serverId = message.guild.id
+			local data = dataCheck(serverId, "serverdata")
+			local args = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
+			if args == nil or args == "" then
+				message:reply("```Unable to change 'Pay range' (Range is currently: ".. tostring(data.minpay) .."-".. tostring(data.maxpay) ..") - No arguments were provided.```")
+			return end
 			local split = string.find(args, ",")
-			if split == nil then return end
-			local num1 = tonumber(string.sub(args, 1, split-1))
-			local num2 = tonumber(string.sub(args, split+1, string.len(args)))
-			if num1 and num2 then
-				minGoal = num1
-				maxGoal = num2
-				message:reply("`Successfully made the following changes:`\n```Minimum goal: ".. tostring(minGoal) .."\nMaximum goal: ".. tostring(maxGoal) .."```")
+			if split == nil then
+				message:reply("```Unable to change 'Pay range' - The arguments provided are invalid. (They must be formatted: number,number)```")
+			return end
+			local min = tonumber(string.sub(args, 1, split-1))
+			local max = tonumber(string.sub(args, split+1, string.len(args)))
+			if min ~= nil and max ~= nil then
+				datastore:Save(serverId, {minpay = min, maxpay = max}, "serverdata")
+				message:reply("```Successfully made the following changes:\nMinimum pay (in RUB): ".. tostring(min) .."\nMaximum pay (in RUB): ".. tostring(max) .."```")
+			else
+				message:reply("```Unable to change 'Pay range' - The arguments provided are invalid. (They must be formatted: number,number)```")
 			end
 		end};
 
-		["setrate"] = {Level = 2, Description = "Sets the conversion rate between USD and RUB.", Args = "<conversion-rate>", -- INTEGRATE INTO DATA
+		["usrate"] = {Level = 3, Description = "Sets the conversion rate for USD --> RUB.", Args = "<usd-rate>", 
 		Run = function(self, message)
+			local serverId = message.guild.id
+			local data = dataCheck(serverId, "serverdata")
 			local args = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
-			if args == nil or args == "" then return end
-			if tonumber(args) then
-				cvRate = tonumber(args)
-				message:reply("`Successfully made the following changes:`\n```Conversion rate: 1 USD == ".. tostring(1 / cvRate) .." RUB```")
+			if args == nil or args == "" then
+				message:reply("```Unable to change 'Conversion rate' (Currently set to: ".. tostring(data.usrate) ..") - No arguments were provided.```")
+			elseif tonumber(args) then
+				datastore:Save(serverId, {usrate = tonumber(args)}, "serverdata")
+				message:reply("```Successfully made the following changes:\nConversion rate: 1 USD == ".. tostring(1 / args) .." RUB```")
+			else
+				message:reply("```Unable to change 'Conversion rate' (".. tostring(prefix) .. tostring(self.Name) ..") - The arguments provided are invalid. (Must be a number)```")
 			end
 		end};
+
+		["ctrate"] = {Level = 3, Description = "Sets the pay rate for coal --> RUB. (Only used when the paytype is 'ratio')", Args = "<coal-rate>", 
+		Run = function(self, message)
+			local serverId = message.guild.id
+			local data = dataCheck(serverId, "serverdata")
+			local args = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
+			if args == nil or args == "" then
+				message:reply("```Unable to change 'Ratio payrate' (Currently set to: ".. tostring(data.ctrate) ..") - No arguments were provided.```")
+			elseif tonumber(args) then
+				datastore:Save(serverId, {ctrate = tonumber(args)}, "serverdata")
+				message:reply("```Successfully made the following changes:\nNew 'ratio' payrate: 1 Coal (mined) == ".. tostring(args) .." RUB```")
+			else
+				message:reply("```Unable to change 'Ratio payrate' (".. tostring(prefix) .. tostring(self.Name) ..") - The arguments provided are invalid. (Must be a number)```")
+			end
+		end};
+
+		["gtrate"] = {Level = 3, Description = "Sets the pay rate for goal --> RUB. (Only used when the paytype is 'static')", Args = "<goal-rate>", 
+		Run = function(self, message)
+			local serverId = message.guild.id
+			local data = dataCheck(serverId, "serverdata")
+			local args = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
+			if args == nil or args == "" then
+				message:reply("```Unable to change 'Static payrate' (Currently set to: ".. tostring(data.gtrate) ..") - No arguments were provided.```")
+			elseif tonumber(args) then
+				datastore:Save(serverId, {gtrate = tonumber(args)}, "serverdata")
+				message:reply("```Successfully made the following changes:\nNew 'static' payrate: 1 Coal (total) == ".. tostring(args) .." RUB```")
+			else
+				message:reply("```Unable to change 'Static payrate' (".. tostring(prefix) .. tostring(self.Name) ..") - The arguments provided are invalid. (Must be a number)```")
+			end
+		end};
+
+		-- Owner-only commands (Owner of the bot, or the user specified in OWNER_OVERRIDE)
 
 		["setmain"] = {Level = 3, Description = "Changes the main broadcast channel.", Args = "<channel-id>",
 		Run = function(self, message)
@@ -232,15 +305,7 @@ return function(ENV)
 			end
 		end};
 
-		["debug"] = {Level = 2, Description = "A debug command.",
-		Run = function(self, message)
-			--if message.author.id ~= owner then return end
-			local json = require("json")
-			local string = json.encode(statusList)
-			message:reply("```".. tostring(string) .."```")
-		end};
-
-		["datamod"] = {Level = 3, Description = "An interactive command for editing datatables", -- TODO: Cleanup this code lolz
+		["datamod"] = {Level = 3, Description = "An interactive command for editing datatables", -- Cleanup this code lolz
 		Run = function(self, message)
 			if message.author.id ~= owner then return end
 			local content, option
