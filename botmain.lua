@@ -51,24 +51,30 @@ end)
 client:on("messageCreate", function(message)
 	if message.author.id == client.user.id or message.author.bot == true or message.author.discriminator == 0000 or message.guild == nil then return end
 
-	local cmdstr = string.lower(message.content)
-	if string.sub(cmdstr, 1, 1) == prefix then
-		local level = getLevel(message)
-		for cmd, data in pairs(commands) do -- Runs through our list of commands and connects them to our messageCreate connection.
-			if string.sub(cmdstr, 1, string.len(prefix) + string.len(cmd)) == string.lower(prefix .. cmd) then
-				if data.Level <= level then
-					local ran, error = pcall(function()
-						data:Run(message)
-					end)
-					if not ran then
-						message:reply("```~~ AN INTERNAL ERROR HAS OCCURRED ~~\n".. tostring(error) .."```")
+	local ran, error = pcall(function()
+		local cmdstr = string.lower(message.content)
+		if string.sub(cmdstr, 1, 1) == prefix then
+			local level = getLevel(message)
+			for cmd, data in pairs(commands) do -- Runs through our list of commands and connects them to our messageCreate connection.
+				if string.sub(cmdstr, 1, string.len(prefix) + string.len(cmd)) == string.lower(prefix .. cmd) then
+					if data.Level <= level then
+						local ran, error = pcall(function()
+							data:Run(message)
+						end)
+						if not ran then
+							message:reply("```~~ AN INTERNAL ERROR HAS OCCURRED WHEN TRYING TO EXECUTE COMMAND ~~\n".. tostring(error) .."```")
+						end
+					else
+						message:reply("```~~ You do not have access to this command! ~~```")
 					end
-				else
-					message:reply("```~~ You do not have access to this command! ~~```")
-				end
-			break end
-		end
-	return end
+				break end
+			end
+		return end
+	end)
+	if not ran then
+		message:reply("```~~ AN INTERNAL ERROR HAS OCCURRED WHEN TRYING TO PARSE COMMAND ~~\n".. tostring(error) .."```")
+	end
+
 
 	local allowed = not adminsOnly
 	for _, id in pairs(admins) do
