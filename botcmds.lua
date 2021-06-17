@@ -5,6 +5,11 @@ return function(ENV)
 	local cmd_table = { -- self
 
 
+		["invite"] = {Level = 1, Description = "Sends an invite of the bot to add to a server",
+		Run = function(self, message)
+			message:reply("```INVITATION LINK:```\nhttps://discord.com/oauth2/authorize?client_id=".. tostring(client.user.id) .."&scope=bot&permissions=8")
+		end};
+	
 		["minecoal"] = {Level = 1, Description = "Mines a piece of coal.",
 		Run = function(self, message)
 			if not isCoalMine(message) then return end

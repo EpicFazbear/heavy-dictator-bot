@@ -26,7 +26,7 @@ return function(ENV)
 
 		self.order = {
 			["userdata"] = {"type", "id", "name", "balance", "mined", "equipped", "inventory"};
-			["serverdata"] = {"type", "id", "name", "coalmine", "paytype", "mingoal", "maxgoal", "minpay", "maxpay", "cvrate", "ctrrate", "gtrrate"};
+			["serverdata"] = {"type", "id", "name", "coalmine", "paytype", "mingoal", "maxgoal", "minpay", "maxpay", "usrate", "ctrate", "gtrate"};
 		}
 
 		self.userdata = { -- Template
