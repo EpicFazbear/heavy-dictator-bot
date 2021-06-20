@@ -5,7 +5,7 @@ return function(ENV)
 	local cmd_table = { -- self
 
 
-		["invite"] = {Level = 1, Description = "Sends an invite of the bot to add to a server",
+		["invite"] = {Level = 1, Description = "Sends an invite of the bot to add to a server.",
 		Run = function(self, message)
 			message:reply("```INVITATION LINK:```\nhttps://discord.com/oauth2/authorize?client_id=".. tostring(client.user.id) .."&scope=bot&permissions=8")
 		end};
@@ -278,7 +278,7 @@ return function(ENV)
 
 		["setmain"] = {Level = 3, Description = "Changes the main broadcast channel.", Args = "<channel-id>",
 		Run = function(self, message)
-			if message.author.id ~= owner then return end
+			--if message.author.id ~= owner then return end
 			local target = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if target ~= nil and target ~= "" then
 				if client:getChannel(target) ~= nil then
@@ -295,7 +295,7 @@ return function(ENV)
 
 		["setdest"] = {Level = 3, Description = "Changes the main destiantion channel.", Args = "<channel-id>",
 		Run = function(self, message)
-			if message.author.id ~= owner then return end
+			--if message.author.id ~= owner then return end
 			local target = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if target ~= nil and target ~= "" then
 				if client:getChannel(target) ~= nil then
@@ -310,9 +310,9 @@ return function(ENV)
 			end
 		end};
 
-		["datamod"] = {Level = 3, Description = "An interactive command for editing datatables", -- Cleanup this code lolz
+		["datamod"] = {Level = 3, Description = "An interactive command for editing datatables.", -- Cleanup this code lolz
 		Run = function(self, message)
-			if message.author.id ~= owner then return end
+			--if message.author.id ~= owner then return end
 			local content, option
 			local main = message:reply("```Please specify the function you are trying to access:\nModify value (mod)\nClear value (clr)\nDelete entire data table (del)```")
 			local newmsg = waitForNextMessage(message)
@@ -420,9 +420,10 @@ return function(ENV)
 
 	cmd_table["help"] = {Level = 1, Description = "Displays the available commands that the user can run.",
 	Run = function(self, message)
+		local userLevel = getLevel(message)
 		local embedMsg = {
 			title = "Commands List",
-			description = "```~~ This bot is in active development. ~~\nIf you have any suggestions, DM them to the owner of this bot: Mattsoft™#0074 (formerly Günsche シ#6704)```\n**Prefix =** `".. tostring(prefix) .."`",
+			description = "```~~ This bot is in active development. ~~\nIf you have any suggestions, DM them to the creator of this bot: Mattsoft™#0074 (formerly Günsche シ#6704)```\n**Prefix =** `".. tostring(prefix) .."`",
 			color = 10747904,
 			thumbnail = {url = client.user.avatarURL},
 			author = {name = "Heavy Dictator", icon_url = client.user.avatarURL},
@@ -430,10 +431,10 @@ return function(ENV)
 				{name = "Public Commands", value = "`".. prefix .."help` - Displays the available commands that the user can run.\n".. metadata[1]}
 			}
 		}
-		if isAdmin(message) and metadata[2] ~= nil then
+		if userLevel >= 2 and metadata[2] ~= nil then
 			table.insert(embedMsg.fields, {name = "Admin Commands", value = metadata[2]})
 		end
-		if message.author.id == owner and metadata[3] ~= nil then
+		if userLevel >= 3 and metadata[3] ~= nil then
 			table.insert(embedMsg.fields, {name = "Operator Commands", value = metadata[3]})
 		end
 		message:reply{embed = embedMsg}

@@ -70,25 +70,18 @@ return function(ENV)
 		end
 	end
 
-	self.isAdmin = function(message)
+	self.getLevel = function(message)
 		local userId = message.author.id
+		local level = 1
 		for _, id in pairs(admins) do
 			if userId == id then
-				return true
+				level = 3 -- Usually 2 (3 is operator-level)
 			end
 		end
 		if message.member:getPermissions():has("administrator", "manageGuild", "manageChannels") then
-			return true
-		end
-		return false
-	end
-
-	self.getLevel = function(message)
-		local level = 1
-		if isAdmin(message) then
 			level = 2
 		end
-		if message.author.id == owner then
+		if userId == owner then
 			level = 3
 		end
 		return level
