@@ -98,7 +98,7 @@ return function(ENV)
 						owed = getCoal(message) * sData.ctrate
 					end
 					addBalance(message.author.id, owed)
-					local foreign = math.floor((owed * sData.cvrate) * 100) / 100
+					local foreign = math.floor((owed * sData.usrate) * 100) / 100
 					message:addReaction("💰")
 					message:reply("Here is your paycheck of `".. owed .." RUB`. (About `$".. foreign .."` in CAPITALIST DOLLARS!!)")
 				end
