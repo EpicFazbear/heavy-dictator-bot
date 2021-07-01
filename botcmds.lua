@@ -90,12 +90,12 @@ return function(ENV)
 					if sData.paytype == "random" then
 						owed = math.random(sData.minpay, sData.maxpay)
 					elseif sData.paytype == "ratio" then
-						owed = getCoal(message) * sData.ctrrate
+						owed = getCoal(message) * sData.ctrate
 					elseif sData.paytype == "static" then
-						owed = cData.goal * sData.gtrrate
+						owed = cData.goal * sData.gtrate
 					else
 						print("[WARN] Server ".. tostring(sData.id) .." has an invalid paytype! Assuming paytype == 'ratio'.")
-						owed = getCoal(message) * sData.ctrrate
+						owed = getCoal(message) * sData.ctrate
 					end
 					addBalance(message.author.id, owed)
 					local foreign = math.floor((owed * sData.cvrate) * 100) / 100
