@@ -423,7 +423,7 @@ return function(ENV)
 		local userLevel = getLevel(message)
 		local embedMsg = {
 			title = "Commands List",
-			description = "```~~ This bot is in active development. ~~\nIf you have any suggestions, DM them to the creator of this bot: Mattsoft™#0074 (formerly Günsche シ#6704)```\n**Prefix =** `".. tostring(prefix) .."`",
+			description = "```~~ This bot is in active development. ~~\nIf you have any suggestions, DM them to the creator of this bot: Mattsoft#0074 (formerly Günsche シ#6704)```\n**Prefix =** `".. tostring(prefix) .."`",
 			color = 10747904,
 			thumbnail = {url = client.user.avatarURL},
 			author = {name = "Heavy Dictator", icon_url = client.user.avatarURL},
