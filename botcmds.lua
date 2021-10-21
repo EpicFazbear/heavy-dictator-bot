@@ -423,7 +423,8 @@ return function(ENV)
 		local userLevel = getLevel(message)
 		local embedMsg = {
 			title = "Commands List",
-			description = "```~~ This bot is in active development. ~~\nIf you have any suggestions, DM them to the creator of this bot: Mattsoft#0074 (formerly Günsche シ#6704)```\n**Prefix =** `".. tostring(prefix) .."`",
+			description = "```~~ This bot is in dormant development. ~~\nIf you would like to make a contribution to the bot, feel free to stop by the GitHub repository linked here: https://github.com/EpicFazbear/heavy-dictator-bot```\n**Prefix =** `".. tostring(prefix) .."`",
+			-- If you have any suggestions, DM them to the creator of this bot: Mattsoft#0074 (formerly Günsche シ#6704)
 			color = 10747904,
 			thumbnail = {url = client.user.avatarURL},
 			author = {name = "Heavy Dictator", icon_url = client.user.avatarURL},
@@ -479,7 +480,7 @@ end;
 	["help"] = {Level = 1, Description = "null",
 	Run = function(self, message)
 		local IsAnAdmin = isAdmin(message)
-		message:reply("```~~ This bot is in active development. ~~\nIf you have any suggestions, DM them to the owner of this bot: Mattsoft™#0074 (formerly Günsche シ#6704)```\n`Prefix = \"".. tostring(prefix) .."\"`")
+		message:reply("```~~ This bot is in active development. ~~\nIf you have any suggestions, DM them to the owner of this bot: Mattsoft#0074 (formerly Günsche シ#6704)```\n`Prefix = \"".. tostring(prefix) .."\"`")
 		message:reply("These are all of the public commands.\
 		`minecoal` - Mines a piece of coal.\
 		`goal` - Shows the amount of pieces of coal the goal is set for this session.\
