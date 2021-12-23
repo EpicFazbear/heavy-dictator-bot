@@ -14,13 +14,15 @@ return function(ENV)
 	self.client = discordia.Client()
 	self.prefix = PRC.PREFIX or getPRC("PREFIX") or ";"
 	self.adminsOnly = (PRC.ADMINS_ONLY or getPRC("ADMINS_ONLY")) == "true"
+	self.isInvisible = (PRC.INVISIBLE or getPRC("INVISIBLE")) == "true"
+	self.silentStartup = (PRC.SILENT_STARTUP or getPRC("SILENT_STARTUP")) == "true"
+	self.status = PRC.STATUS or getPRC("STATUS") or ""
+	self.main_channel = PRC.MAIN_CHANNEL or getPRC("MAIN_CHANNEL") or ""
+	self.dest_channel = PRC.DEST_CHANNEL or getPRC("DEST_CHANNEL") or ""
+	self.data_storage = PRC.DATA_CHANNEL or getPRC("DATA_CHANNEL") or ""
 	self.ownerOverride = PRC.OWNER_OVERRIDE or getPRC("OWNER_OVERRIDE") or "OWNER_ID"
 	local ran, returns = pcall(function() return json.decode(PRC.ADMINS or getPRC("ADMINS")) end)
 	self.admins = (ran == true and returns) or {}
-	self.isInvisible = PRC.INVISIBLE or getPRC("INVISIBLE") or "false"
-	self.status = PRC.STATUS or getPRC("STATUS") or ""
-	self.mainChannel = PRC.MAIN_CHANNEL or getPRC("MAIN_CHANNEL") or ""
-	self.destChannel = PRC.DEST_CHANNEL or getPRC("DEST_CHANNEL") or ""
 
 	-- Below are temporary until serverdata is fully developed. --
 	self.coalToRub = 8 -- PRC.CV_COAL

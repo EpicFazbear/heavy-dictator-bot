@@ -1,7 +1,6 @@
 -- Initializes all database-related functions and variables. --
 
 local json = require("json")
-local data_storage = process.env.DATA_CHANNEL or require("./botvars.lua")("DATA_CHANNEL")
 
 local function mark_pin(channel)
 	channel:send("-------------------- (100 Messages)"):pin()

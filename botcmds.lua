@@ -282,14 +282,14 @@ return function(ENV)
 			local target = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if target ~= nil and target ~= "" then
 				if client:getChannel(target) ~= nil then
-					mainChannel = target
-					message:reply("`Successfully changed the 'broadcast' channel!` - <#".. tostring(mainChannel) ..">")
+					main_channel = target
+					message:reply("`Successfully changed the 'broadcast' channel!` - <#".. tostring(main_channel) ..">")
 				else
 					message:reply("`Could not find the channel of the provided ID!`")
 				end
 			else
-				mainChannel = message.channel.id
-				message:reply("`Successfully changed the 'broadcast' channel!` - <#".. tostring(mainChannel) ..">")
+				main_channel = message.channel.id
+				message:reply("`Successfully changed the 'broadcast' channel!` - <#".. tostring(main_channel) ..">")
 			end
 		end};
 
@@ -299,14 +299,14 @@ return function(ENV)
 			local target = string.sub(message.content, string.len(prefix) + string.len(self.Name) + 2)
 			if target ~= nil and target ~= "" then
 				if client:getChannel(target) ~= nil then
-					destChannel = target
-					message:reply("`Successfully changed the 'destination' channel!` - <#".. tostring(destChannel) ..">")
+					dest_channel = target
+					message:reply("`Successfully changed the 'destination' channel!` - <#".. tostring(dest_channel) ..">")
 				else
 					message:reply("`Could not find the channel of the provided ID!`")
 				end
 			else
-				destChannel = message.channel.id
-				message:reply("`Successfully changed the 'destination' channel!` - <#".. tostring(destChannel) ..">")
+				dest_channel = message.channel.id
+				message:reply("`Successfully changed the 'destination' channel!` - <#".. tostring(dest_channel) ..">")
 			end
 		end};
 

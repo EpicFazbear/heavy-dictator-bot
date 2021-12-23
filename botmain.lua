@@ -16,11 +16,13 @@ client:on("ready", function()
 	table.insert(admins, owner)
 	print("Heavy dictator is now activating..")
 	local message
-	if isInvisible ~= "true" then
-		if mainChannel ~= nil then
-			message = client:getChannel(mainChannel):send("***Starting bot..***")
-		else
-			message = client:getUser(owner):getPrivateChannel():send("***Starting bot..***")
+	if isInvisible == false then
+		if silentStartup == false then
+			if main_channel ~= nil and main_channel ~= "" then
+				message = client:getChannel(main_channel):send("***Starting bot..***")
+			else
+				message = client:getUser(owner):getPrivateChannel():send("***Starting bot..***")
+			end
 		end
 		client:setStatus("idle")
 		client:setGame("Initializing..")
@@ -37,8 +39,10 @@ client:on("ready", function()
 		datastore:Sync() -- Build our data cache by calling the sync function.
 	end
 
-	if isInvisible ~= "true" then
-		message:setContent(message.content .. "\n***{!} Heavy dictator has been started. {!}***")
+	if isInvisible == false then
+		if message then
+			message:setContent(message.content .. "\n***{!} Heavy dictator has been started. {!}***")
+		end
 		client:setStatus("online")
 		if string.lower(status) ~= "none" then
 			client:setGame(status)
@@ -82,8 +86,8 @@ client:on("messageCreate", function(message)
 			allowed = true
 		end
 	end
-	if message.channel.id == mainChannel and destChannel and allowed then
-		local channel = client:getChannel(destChannel)
+	if message.channel.id == main_channel and dest_channel and allowed then
+		local channel = client:getChannel(dest_channel)
 		if message.attachment ~= nil and channel ~= nil then
 			channel:send{content = message.content, embed = {image = {url = message.attachment.url}}}
 		elseif channel ~= nil then
