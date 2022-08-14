@@ -73,13 +73,14 @@ client:on("messageCreate", function(message)
 					end
 				break end
 			end
-		return end
+		end
 	end)
 	if not ran then
 		message:reply("```~~ AN INTERNAL ERROR HAS OCCURRED WHEN TRYING TO PARSE COMMAND ~~\n".. tostring(error) .."```")
 	end
 
 
+	if string.sub(string.lower(message.content), 1, 1) == prefix then return end
 	local allowed = not adminsOnly
 	for _, id in pairs(admins) do
 		if message.author.id == id then
