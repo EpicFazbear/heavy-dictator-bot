@@ -8,6 +8,7 @@ local function mark_pin(channel)
 end
 
 return function(ENV)
+	---@diagnostic disable-next-line: param-type-mismatch
 	setfenv(1, ENV) -- Connects the main environment from botmain.lua into this file.
 	local data_table = {} -- self
 

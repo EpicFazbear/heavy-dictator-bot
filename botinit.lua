@@ -6,6 +6,7 @@ local PRC = process.env
 local getPRC = require("./botvars.lua") -- Loads our .ENV function in case the bot isn't ran through Heroku.
 
 return function(ENV)
+	---@diagnostic disable-next-line: param-type-mismatch
 	setfenv(1, ENV) -- Connects the main environment from botmain.lua into this file.
 	local self = {} -- init_table
 

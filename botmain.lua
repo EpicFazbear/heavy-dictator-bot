@@ -8,6 +8,7 @@
 local oldfenv = getfenv(1) -- TODO: use metatables instead
 local newfenv = require("./botinit.lua")(oldfenv)
 for i,v in pairs(newfenv) do oldfenv[i] = v end
+---@diagnostic disable-next-line: param-type-mismatch
 setfenv(1, oldfenv)
 
 

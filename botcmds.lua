@@ -1,6 +1,7 @@
 -- The entire of commands that are registered on the Bot. --
 
 return function(ENV)
+	---@diagnostic disable-next-line: param-type-mismatch
 	setfenv(1, ENV) -- Connects the main environment from botmain.lua into this file.
 	local cmd_table = { -- self
 
