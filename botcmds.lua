@@ -136,7 +136,7 @@ return function(ENV)
 					local data = datastore:Save(serverId, {coalmine = target}, "serverdata")
 					message:reply("`Successfully changed the 'coalmine' channel!` - <#" .. tostring(data.coalmine) .. ">")
 					coalOperation(serverId)
-					client:getChannel(data.coalmine):send("`We are now aiming for '" .. tostring(statusList[serverId].goal) .. "' pieces of coal.`")
+					client:getChannel(data.coalmine):send("**```We are now aiming for '" .. tostring(statusList[serverId].goal) .. "' pieces of coal.```**")
 				else
 					message:reply("`Could not find the channel of the provided ID!`")
 				end
@@ -144,7 +144,7 @@ return function(ENV)
 				local data = datastore:Save(serverId, {coalmine = message.channel.id}, "serverdata")
 				message:reply("`Successfully changed the 'coalmine' channel!` - <#" .. tostring(data.coalmine) .. ">")
 				coalOperation(serverId)
-				client:getChannel(data.coalmine):send("`We are now aiming for '" .. tostring(statusList[serverId].goal) .. "' pieces of coal.`")
+				client:getChannel(data.coalmine):send("**```We are now aiming for '" .. tostring(statusList[serverId].goal) .. "' pieces of coal.```**")
 			end
 		end};
 
@@ -154,8 +154,8 @@ return function(ENV)
 			local data = dataCheck(serverId, "serverdata")
 			if data.coalmine ~= nil then
 				coalOperation(serverId)
-				message:reply("`Successfully restarted the coal mine operation!`")
-				client:getChannel(data.coalmine):send("`We are now aiming for '" .. tostring(statusList[serverId].goal) .. "' pieces of coal.`")
+				message:reply("```Successfully restarted the coal mine operation!```")
+				client:getChannel(data.coalmine):send("**```We are now aiming for '" .. tostring(statusList[serverId].goal) .. "' pieces of coal.```**")
 			else
 				local main = message:reply("`No coalmine channel currently exists for this server! Would you like to set THIS channel as the coalmine channel?`")
 				local content = waitForNextMessage(message).content:lower()
@@ -163,7 +163,7 @@ return function(ENV)
 					datastore:Save(serverId, {coalmine = message.channel.id}, "serverdata")
 					main:setContent("`Set coalmine channel for this server to: ` <#" .. tostring(message.channel.id) .. ">.")
 				else
-					main:setContent("`Procedure cancelled.`")
+					main:setContent("```Cancelled the procedure.```")
 				end
 			end
 		end};
