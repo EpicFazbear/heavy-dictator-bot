@@ -8,3 +8,8 @@
 - Requires [Luvit](https://luvit.io/) and [Discordia](https://github.com/SinisterRectus/Discordia) in order to run.
 - Configurable in the .env file (The template is .env.template)
 - Recommended to use [Heroku](https://www.heroku.com/) to host externally 24/7. There's some additional steps you'll need to do in order to set it up, however.
+
+## TODO
+- Do some small reformatting
+- Create string.split custom function in botinit.lua
+- Add file endlines
