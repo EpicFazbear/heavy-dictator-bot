@@ -95,7 +95,7 @@ return function(ENV)
 		if message.channel.id == data.coalmine then
 			return true
 		elseif data.coalmine ~= "" then
-			message:reply("Invalid channel! Go-to: <#".. tostring(data.coalmine) ..">.")
+			message:reply("Invalid channel! Go-to: <#" .. tostring(data.coalmine) .. ">.")
 			message:addReaction("❌")
 			return false
 		else

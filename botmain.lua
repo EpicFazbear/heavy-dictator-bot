@@ -67,7 +67,7 @@ client:on("messageCreate", function(message)
 							data:Run(message)
 						end)
 						if not ran then
-							message:reply("```~~ AN INTERNAL ERROR HAS OCCURRED WHEN TRYING TO EXECUTE COMMAND ~~\n".. tostring(error) .."```")
+							message:reply("```~~ AN INTERNAL ERROR HAS OCCURRED WHEN TRYING TO EXECUTE COMMAND ~~\n" .. tostring(error) .. "```")
 						end
 					else
 						message:reply("```~~ You do not have access to this command! ~~```")
@@ -77,7 +77,7 @@ client:on("messageCreate", function(message)
 		end
 	end)
 	if not ran then
-		message:reply("```~~ AN INTERNAL ERROR HAS OCCURRED WHEN TRYING TO PARSE COMMAND ~~\n".. tostring(error) .."```")
+		message:reply("```~~ AN INTERNAL ERROR HAS OCCURRED WHEN TRYING TO PARSE COMMAND ~~\n" .. tostring(error) .. "```")
 	end
 
 
@@ -103,7 +103,7 @@ local BOT_TOKEN = process.env.BOT_TOKEN or require("./botvars.lua")("BOT_TOKEN")
 -- Make sure you PROTECT your BOT TOKEN! Its security is your highest priority.
 
 if type(BOT_TOKEN) == "string" then
-	client:run("Bot ".. BOT_TOKEN);
+	client:run("Bot " .. BOT_TOKEN);
 else
 	print("LUA test passed with zero errors!\nNOTE: To actually execute the bot, you'll need to do `heroku local` (Granted you have the Heroku CLI installed).")
 end;

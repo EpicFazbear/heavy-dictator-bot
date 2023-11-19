@@ -65,12 +65,12 @@ return function(ENV)
 		else
 			for _, pin in pairs(pin_pool) do
 				local msg_pool = data_storage:getMessagesAfter(pin.id, 100)
-				print("[DATA] Loading ".. tostring(#msg_pool) .." stored datatables into Cache.")
+				print("[DATA] Loading " .. tostring(#msg_pool) .. " stored datatables into Cache.")
 				for _, msg in pairs(msg_pool) do
 					if msg.author.id == client.user.id then
 						local decoded = json.decode(msg.content:gsub("```json\n", ""):gsub("```",""))
 						if type(decoded) == "table" and decoded.id ~= nil and decoded.type ~= nil then
-							--print("[DATA] Loading data of ".. tostring(decoded.id) ..".")
+							--print("[DATA] Loading data of " .. tostring(decoded.id) .. ".")
 							decoded = self:Serialize(decoded, self[decoded.type])
 							self.Cache[decoded.id] = decoded
 							self.MsgPairs[decoded.id] = msg.id
@@ -130,16 +130,16 @@ return function(ENV)
 			if data[key] ~= nil then
 				local value = data[key]
 				if type(value) == "string" then
-					value = "\"".. value .."\""
+					value = "\"" .. value .. "\""
 				elseif type(value) == "number" then
 					value = value
 				elseif type(value) == "table" then
 					value = json.encode(value) -- Use native function since order of regular arrays doesn't matter
 				end
-				encoded = encoded .."	\"".. tostring(key) .."\": ".. tostring(value) .. ",\n"
+				encoded = encoded .. "	\"" .. tostring(key) .. "\": " .. tostring(value) .. ",\n"
 			end
 		end
-		return encoded .."}"
+		return encoded .. "}"
 	end
 
 
@@ -166,9 +166,9 @@ return function(ENV)
 		if message ~= nil then
 			message = data_storage:getMessage(message)
 			if message ~= nil and message.author.id == client.user.id then
-				message:setContent("```json\n".. encoded .."\n```") -- Since data already exists for this ID, simply overwrite it
+				message:setContent("```json\n" .. encoded .. "\n```") -- Since data already exists for this ID, simply overwrite it
 			else
-				print("[WARN] Attempt to locate data ID: ".. tostring(id) .." - MsgPairs ID is invalid or does not exist!")
+				print("[WARN] Attempt to locate data ID: " .. tostring(id) .. " - MsgPairs ID is invalid or does not exist!")
 			end
 		else
 			message = data_storage:send{content = encoded, code = "json"} -- Create new data for our unique ID
@@ -192,7 +192,7 @@ return function(ENV)
 					mark_pin(data_storage)
 				end
 			else
-				print("[WARN] Attempt to create new data message: ".. tostring(id) .." - Message to the `data_storage` channel failed to send!")
+				print("[WARN] Attempt to create new data message: " .. tostring(id) .. " - Message to the `data_storage` channel failed to send!")
 				return false
 			end
 		end
@@ -211,7 +211,7 @@ return function(ENV)
 				data[key] = value
 				return self:Save(id, data)
 			else
-				print("[WARN] Attempt to set key '".. tostring(key) .."' to nil from ID: ".. tostring(id) .." - ID does not exist in Cache!")
+				print("[WARN] Attempt to set key '" .. tostring(key) .. "' to nil from ID: " .. tostring(id) .. " - ID does not exist in Cache!")
 				return false
 			end
 		else
@@ -234,7 +234,7 @@ return function(ENV)
 				self.Metadata[type][id] = nil
 			end
 		else
-			print("[WARN] Attempt to delete data ID: ".. tostring(id) .." - ID does not exist in Cache!")
+			print("[WARN] Attempt to delete data ID: " .. tostring(id) .. " - ID does not exist in Cache!")
 			return false
 		end
 	end
