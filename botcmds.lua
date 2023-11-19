@@ -50,7 +50,7 @@ return function(ENV)
 			if not isCoalMine(message) then return end
 			local data = statusList[message.guild.id]
 			if data ~= nil then
-				message:reply("About `" .. tostring(data.goal - data.coal) .. "` out of `" .. tostring(data.goal) .. "` pieces of coal need to be mined. NOW BACK TO WORK!!")
+				message:reply("About `" .. tostring(data.goal - data.coal) .. "` out of `" .. tostring(data.goal) .. "` pieces of coal still needs to be mined. NOW BACK TO WORK!!")
 			else
 				message:addReaction("❌")
 				message:reply("Coal operation is not active at this time.")
@@ -304,7 +304,7 @@ return function(ENV)
 				message:addReaction("❌")
 				message:reply("```Unable to change give out paycheck - The arguments provided are invalid.\n(They must be formatted: <target-user> <amount>)```")
 			return end
-			local userid = tonumber(string.sub(args, 1, split-1))
+			local userid = string.sub(args, 1, split-1)
 			local amount = tonumber(string.sub(args, split+1, string.len(args)))
 			if userid ~= nil and amount ~= nil then
 				local user = client:getUser(userid)
@@ -312,7 +312,7 @@ return function(ENV)
 					addBalance(userid, amount)
 					local foreign = math.floor((amount * sData.usrate) * 100) / 100
 					message:addReaction("💰")
-					message:reply(user.username .. " has been paid `" .. tostring(amount) .. " RUB`. (About `$" .. tostring(foreign) .. "` in CAPITALIST DOLLARS!!)")
+					message:reply("`@" .. user.username .. "` has been paid `" .. tostring(amount) .. " RUB`. (About `$" .. tostring(foreign) .. "` in CAPITALIST DOLLARS!!)")
 				else
 					message:addReaction("❌")
 					message:reply("```Unable to change give out paycheck - User ID <@" .. tostring(userid) .. "> does not exist.```")

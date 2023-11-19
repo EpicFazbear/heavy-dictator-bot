@@ -13,3 +13,4 @@
 - Do some small reformatting
 - Create string.split custom function in botinit.lua
 - Add file endlines
+- Change argument in self.getCoal (botinit.lua) to be a userid instead of a message object
